@@ -1,7 +1,46 @@
 package main
 
-import "fmt"
+import (
+	"context"
+	"fmt"
+	"github.com/gorilla/mux"
+	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/rs/cors"
+	"log"
+	"net/http"
+	"os"
+	"time"
+	"tribble/handlers"
+)
 
 func main() {
 	fmt.Println("hello world")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	pool, err := pgxpool.Connect(ctx, os.Getenv("DATABASE_URL"))
+	if err != nil {
+		log.Fatal(fmt.Sprintf("Unable to connect to database: %v.", err))
+	}
+	defer pool.Close()
+
+	err = pool.Ping(ctx)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println("Successfully connected to database")
+
+	r := mux.NewRouter()
+	handler := cors.New(cors.Options{
+		AllowedOrigins:   []string{"*"},
+		AllowedMethods:   []string{http.MethodGet, http.MethodPost, http.MethodOptions},
+		AllowedHeaders:   []string{"*"},
+		AllowCredentials: true,
+	}).Handler(r)
+
+	r.HandleFunc("/users/", func(w http.ResponseWriter, r *http.Request) {
+		handlers.CreateUser(pool, w, r)
+	}).Methods("POST")
+
+	_ = http.ListenAndServe(":"+os.Getenv("PORT"), handler)
 }
