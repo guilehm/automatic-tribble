@@ -8,6 +8,7 @@ import (
 	"os"
 	"time"
 	"tribble/handlers"
+	"tribble/middlewares"
 
 	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v4/pgxpool"
@@ -49,5 +50,5 @@ func main() {
 		handlers.CreateUser(pool, w, r)
 	}).Methods("POST")
 
-	_ = http.ListenAndServe(":"+os.Getenv("PORT"), handler)
+	_ = http.ListenAndServe(":"+os.Getenv("PORT"), middlewares.LogRequest(handler))
 }
