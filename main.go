@@ -3,14 +3,15 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/gorilla/mux"
-	"github.com/jackc/pgx/v4/pgxpool"
-	"github.com/rs/cors"
 	"log"
 	"net/http"
 	"os"
 	"time"
 	"tribble/handlers"
+
+	"github.com/gorilla/mux"
+	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/rs/cors"
 )
 
 func main() {
