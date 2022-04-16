@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"log"
 	"net/http"
 	"time"
 	"tribble/models"
@@ -27,25 +26,13 @@ func GetUser(pool *pgxpool.Pool, w http.ResponseWriter, r *http.Request) {
 	err := row.Scan(&user.ID, &user.Name, &user.DateJoined)
 
 	if err != nil {
-		response, _ := json.Marshal(struct {
-			Message string `json:"message"`
-		}{Message: "user not found"})
-		log.Println(err.Error())
-
-		w.WriteHeader(http.StatusNotFound)
-		w.Write(response)
+		HandleApiErrors(w, http.StatusNotFound, "")
 		return
 	}
 
 	response, err := json.Marshal(user)
 	if err != nil {
-		response, _ := json.Marshal(struct {
-			Message string `json:"message"`
-		}{Message: "could not process response"})
-		log.Println(err.Error())
-
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write(response)
+		HandleApiErrors(w, http.StatusInternalServerError, "")
 		return
 	}
 	w.Write(response)
@@ -58,13 +45,7 @@ func GetUserList(pool *pgxpool.Pool, w http.ResponseWriter, r *http.Request) {
 	rows, err := pool.Query(context.Background(), sql)
 
 	if err != nil {
-		response, _ := json.Marshal(struct {
-			Message string `json:"message"`
-		}{Message: "could not get users"})
-		log.Println(err.Error())
-
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write(response)
+		HandleApiErrors(w, http.StatusInternalServerError, "")
 		return
 	}
 
@@ -73,13 +54,7 @@ func GetUserList(pool *pgxpool.Pool, w http.ResponseWriter, r *http.Request) {
 		var user models.User
 		err = rows.Scan(&user.ID, &user.Name, &user.DateJoined)
 		if err != nil {
-			response, _ := json.Marshal(struct {
-				Message string `json:"message"`
-			}{Message: "could not get users"})
-			log.Println(err.Error())
-
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write(response)
+			HandleApiErrors(w, http.StatusInternalServerError, "")
 			return
 		}
 		userList = append(userList, user)
@@ -87,13 +62,7 @@ func GetUserList(pool *pgxpool.Pool, w http.ResponseWriter, r *http.Request) {
 
 	response, err := json.Marshal(userList)
 	if err != nil {
-		response, _ := json.Marshal(struct {
-			Message string `json:"message"`
-		}{Message: "could not process response"})
-		log.Println(err.Error())
-
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write(response)
+		HandleApiErrors(w, http.StatusInternalServerError, "")
 		return
 	}
 	w.Write(response)
@@ -106,12 +75,7 @@ func CreateUser(pool *pgxpool.Pool, w http.ResponseWriter, r *http.Request) {
 	var user models.User
 	err := json.NewDecoder(r.Body).Decode(&user)
 	if err != nil {
-		response, _ := json.Marshal(struct {
-			Message string `json:"message"`
-		}{Message: "unable to decode request body"})
-
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write(response)
+		HandleApiErrors(w, http.StatusInternalServerError, "unable to decode request body")
 		return
 	}
 
@@ -125,12 +89,7 @@ func CreateUser(pool *pgxpool.Pool, w http.ResponseWriter, r *http.Request) {
 	).Scan(&id)
 
 	if err != nil {
-		response, _ := json.Marshal(struct {
-			Message string `json:"message"`
-		}{Message: err.Error()})
-
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write(response)
+		HandleApiErrors(w, http.StatusInternalServerError, "")
 		return
 	}
 
