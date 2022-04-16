@@ -25,15 +25,11 @@ func CreateUser(pool *pgxpool.Pool, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
 	var id int
 
 	sql := `INSERT INTO users (name, date_joined) VALUES ($1, $2) RETURNING id`
 	err = pool.QueryRow(
-		ctx,
+		context.Background(),
 		sql,
 		user.Name, time.Now(),
 	).Scan(&id)
