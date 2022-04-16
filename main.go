@@ -43,6 +43,9 @@ func main() {
 		handlers.GetUser(pool, w, r)
 	}).Methods("GET")
 	r.HandleFunc("/users/", func(w http.ResponseWriter, r *http.Request) {
+		handlers.GetUserList(pool, w, r)
+	}).Methods("GET")
+	r.HandleFunc("/users/", func(w http.ResponseWriter, r *http.Request) {
 		handlers.CreateUser(pool, w, r)
 	}).Methods("POST")
 
