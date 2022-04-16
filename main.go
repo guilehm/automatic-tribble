@@ -29,7 +29,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Println("Successfully connected to database")
+	log.Println("successfully connected to database")
 
 	r := mux.NewRouter()
 	handler := cors.New(cors.Options{
@@ -39,6 +39,9 @@ func main() {
 		AllowCredentials: true,
 	}).Handler(r)
 
+	r.HandleFunc("/users/{id}/", func(w http.ResponseWriter, r *http.Request) {
+		handlers.GetUser(pool, w, r)
+	}).Methods("GET")
 	r.HandleFunc("/users/", func(w http.ResponseWriter, r *http.Request) {
 		handlers.CreateUser(pool, w, r)
 	}).Methods("POST")
