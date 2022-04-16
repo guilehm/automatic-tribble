@@ -66,7 +66,6 @@ func GetUserList(pool *pgxpool.Pool, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Write(response)
-
 }
 
 func CreateUser(pool *pgxpool.Pool, w http.ResponseWriter, r *http.Request) {
@@ -97,5 +96,24 @@ func CreateUser(pool *pgxpool.Pool, w http.ResponseWriter, r *http.Request) {
 		ID string `json:"id"`
 	}{ID: fmt.Sprintf("%d", id)})
 	w.Write(response)
+}
 
+func DeleteUser(pool *pgxpool.Pool, w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	vars := mux.Vars(r)
+	id := vars["id"]
+
+	sql := `DELETE FROM users where id=$1`
+	res, err := pool.Exec(context.Background(), sql, id)
+	if err != nil {
+		HandleApiErrors(w, http.StatusInternalServerError, "")
+		return
+	}
+	rowsAffected := res.RowsAffected()
+	if rowsAffected == 0 {
+		HandleApiErrors(w, http.StatusNotFound, "")
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
 }
