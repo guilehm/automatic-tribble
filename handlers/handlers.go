@@ -51,6 +51,55 @@ func GetUser(pool *pgxpool.Pool, w http.ResponseWriter, r *http.Request) {
 	w.Write(response)
 }
 
+func GetUserList(pool *pgxpool.Pool, w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	sql := `SELECT id, name, date_joined FROM users`
+	rows, err := pool.Query(context.Background(), sql)
+
+	if err != nil {
+		response, _ := json.Marshal(struct {
+			Message string `json:"message"`
+		}{Message: "could not get users"})
+		log.Println(err.Error())
+
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(response)
+		return
+	}
+
+	var userList []models.User
+	for rows.Next() {
+		var user models.User
+		err = rows.Scan(&user.ID, &user.Name, &user.DateJoined)
+		if err != nil {
+			response, _ := json.Marshal(struct {
+				Message string `json:"message"`
+			}{Message: "could not get users"})
+			log.Println(err.Error())
+
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write(response)
+			return
+		}
+		userList = append(userList, user)
+	}
+
+	response, err := json.Marshal(userList)
+	if err != nil {
+		response, _ := json.Marshal(struct {
+			Message string `json:"message"`
+		}{Message: "could not process response"})
+		log.Println(err.Error())
+
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(response)
+		return
+	}
+	w.Write(response)
+
+}
+
 func CreateUser(pool *pgxpool.Pool, w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
