@@ -93,6 +93,7 @@ func CreateUser(pool *pgxpool.Pool, w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		log.Println(err.Error())
+		// TODO: improve response for unique constraint violated
 		HandleApiErrors(w, http.StatusInternalServerError, "")
 		return
 	}
@@ -101,6 +102,35 @@ func CreateUser(pool *pgxpool.Pool, w http.ResponseWriter, r *http.Request) {
 		ID string `json:"id"`
 	}{ID: fmt.Sprintf("%d", id)})
 	w.Write(response)
+}
+
+func UpdateUser(pool *pgxpool.Pool, w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id := vars["id"]
+
+	var user models.User
+	err := json.NewDecoder(r.Body).Decode(&user)
+	if err != nil {
+		log.Println(err.Error())
+		HandleApiErrors(w, http.StatusBadRequest, "")
+		return
+	}
+
+	sql := `UPDATE users SET name=$2 WHERE id=$1`
+	res, err := pool.Exec(context.Background(), sql, id, user.Name)
+	if err != nil {
+		log.Println(err.Error())
+		// TODO: improve response for unique constraint violated
+		HandleApiErrors(w, http.StatusInternalServerError, "")
+		return
+	}
+	rowsAffected := res.RowsAffected()
+	if rowsAffected == 0 {
+		log.Println(err.Error())
+		HandleApiErrors(w, http.StatusNotFound, "")
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func DeleteUser(pool *pgxpool.Pool, w http.ResponseWriter, r *http.Request) {

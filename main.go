@@ -43,10 +43,13 @@ func main() {
 	r.HandleFunc("/users/{id}/", func(w http.ResponseWriter, r *http.Request) {
 		handlers.GetUser(pool, w, r)
 	}).Methods("GET")
-
+	r.HandleFunc("/users/{id}/", func(w http.ResponseWriter, r *http.Request) {
+		handlers.UpdateUser(pool, w, r)
+	}).Methods("PUT")
 	r.HandleFunc("/users/{id}/", func(w http.ResponseWriter, r *http.Request) {
 		handlers.DeleteUser(pool, w, r)
 	}).Methods("DELETE")
+	
 	r.HandleFunc("/users/", func(w http.ResponseWriter, r *http.Request) {
 		handlers.GetUserList(pool, w, r)
 	}).Methods("GET")
