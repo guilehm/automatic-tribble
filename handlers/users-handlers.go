@@ -3,8 +3,11 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
+
+	"github.com/jackc/pgconn"
 
 	"net/http"
 	"time"
@@ -120,12 +123,24 @@ func UpdateUser(pool *pgxpool.Pool, w http.ResponseWriter, r *http.Request) {
 	sql := `UPDATE users SET name=$2 WHERE id=$1`
 	res, err := pool.Exec(context.Background(), sql, id, user.Name)
 	if err != nil {
-		log.Println(err.Error())
-		// TODO: improve response for unique constraint violated
-		// TODO: improve response for value too long
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			log.Printf("PgError: code: %v message: %v", pgErr.Code, pgErr.Message)
+			switch pgErr.Code {
+			case "23505":
+				// unique constraint violated
+				HandleApiErrors(w, http.StatusBadRequest, "this name already exists")
+				return
+			case "22001":
+				// value too long for type character
+				HandleApiErrors(w, http.StatusBadRequest, "value too long for type character")
+				return
+			}
+		}
 		HandleApiErrors(w, http.StatusInternalServerError, "")
 		return
 	}
+
 	rowsAffected := res.RowsAffected()
 	if rowsAffected == 0 {
 		HandleApiErrors(w, http.StatusNotFound, "")
