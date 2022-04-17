@@ -105,6 +105,7 @@ func CreateUser(pool *pgxpool.Pool, w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdateUser(pool *pgxpool.Pool, w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 	vars := mux.Vars(r)
 	id := vars["id"]
 
@@ -126,7 +127,6 @@ func UpdateUser(pool *pgxpool.Pool, w http.ResponseWriter, r *http.Request) {
 	}
 	rowsAffected := res.RowsAffected()
 	if rowsAffected == 0 {
-		log.Println(err.Error())
 		HandleApiErrors(w, http.StatusNotFound, "")
 		return
 	}
