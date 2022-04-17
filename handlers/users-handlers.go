@@ -89,9 +89,9 @@ func CreateUser(pool *pgxpool.Pool, w http.ResponseWriter, r *http.Request) {
 
 	var id int
 
-	sql := `INSERT INTO users (name, date_joined) VALUES ($1, $2) RETURNING id`
+	sql := `INSERT INTO users (name, email, date_joined) VALUES ($1, $2, $3) RETURNING id`
 	err = pool.QueryRow(
-		context.Background(), sql, user.Name, time.Now(),
+		context.Background(), sql, user.Name, user.Email, time.Now(),
 	).Scan(&id)
 
 	if err != nil {
