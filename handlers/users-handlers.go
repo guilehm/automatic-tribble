@@ -122,6 +122,7 @@ func UpdateUser(pool *pgxpool.Pool, w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println(err.Error())
 		// TODO: improve response for unique constraint violated
+		// TODO: improve response for value too long
 		HandleApiErrors(w, http.StatusInternalServerError, "")
 		return
 	}
