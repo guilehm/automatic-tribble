@@ -29,9 +29,7 @@ func GetUser(pool *pgxpool.Pool, w http.ResponseWriter, r *http.Request) {
 	row := pool.QueryRow(context.Background(), sql, id)
 
 	var user models.User
-	err := row.Scan(&user.ID, &user.Name, &user.DateJoined)
-
-	if err != nil {
+	if err := row.Scan(&user.ID, &user.Name, &user.DateJoined); err != nil {
 		log.Println(err.Error())
 		HandleApiErrors(w, http.StatusNotFound, "")
 		return
@@ -82,8 +80,7 @@ func CreateUser(pool *pgxpool.Pool, w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	var user models.User
-	err := json.NewDecoder(r.Body).Decode(&user)
-	if err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 		log.Println(err.Error())
 		HandleApiErrors(w, http.StatusInternalServerError, "unable to decode request body")
 		return
@@ -98,7 +95,7 @@ func CreateUser(pool *pgxpool.Pool, w http.ResponseWriter, r *http.Request) {
 	var id int
 
 	sql := `INSERT INTO users (name, email, date_joined) VALUES ($1, $2, $3) RETURNING id`
-	err = pool.QueryRow(
+	err := pool.QueryRow(
 		context.Background(), sql, user.Name, user.Email, time.Now(),
 	).Scan(&id)
 
@@ -121,8 +118,7 @@ func UpdateUser(pool *pgxpool.Pool, w http.ResponseWriter, r *http.Request) {
 	id := vars["id"]
 
 	var user models.User
-	err := json.NewDecoder(r.Body).Decode(&user)
-	if err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 		log.Println(err.Error())
 		HandleApiErrors(w, http.StatusBadRequest, "")
 		return
@@ -155,8 +151,7 @@ func UpdateUser(pool *pgxpool.Pool, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rowsAffected := res.RowsAffected()
-	if rowsAffected == 0 {
+	if rowsAffected := res.RowsAffected(); rowsAffected == 0 {
 		HandleApiErrors(w, http.StatusNotFound, "")
 		return
 	}
@@ -176,8 +171,7 @@ func DeleteUser(pool *pgxpool.Pool, w http.ResponseWriter, r *http.Request) {
 		HandleApiErrors(w, http.StatusInternalServerError, "")
 		return
 	}
-	rowsAffected := res.RowsAffected()
-	if rowsAffected == 0 {
+	if rowsAffected := res.RowsAffected(); rowsAffected == 0 {
 		log.Println(err.Error())
 		HandleApiErrors(w, http.StatusNotFound, "")
 		return
