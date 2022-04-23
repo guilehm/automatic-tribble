@@ -5,3 +5,9 @@ CREATE TABLE players
     user_id int          NOT NULL,
     sprite  varchar(128) NOT NULL
 );
+
+ALTER TABLE players
+    ADD CONSTRAINT players_user_id_fk_user_id
+        FOREIGN KEY (user_id) REFERENCES users (id);
+
+CREATE INDEX players_user_id ON players (user_id);
