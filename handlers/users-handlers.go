@@ -7,15 +7,17 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/jackc/pgconn"
-
 	"net/http"
 	"time"
 	"tribble/models"
 
+	"github.com/go-playground/validator"
 	"github.com/gorilla/mux"
+	"github.com/jackc/pgconn"
 	"github.com/jackc/pgx/v4/pgxpool"
 )
+
+var validate = validator.New()
 
 func GetUser(pool *pgxpool.Pool, w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
@@ -87,6 +89,12 @@ func CreateUser(pool *pgxpool.Pool, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if validationErr := validate.Struct(user); validationErr != nil {
+		log.Println(validationErr.Error())
+		HandleApiErrors(w, http.StatusBadRequest, validationErr.Error())
+		return
+	}
+
 	var id int
 
 	sql := `INSERT INTO users (name, email, date_joined) VALUES ($1, $2, $3) RETURNING id`
@@ -117,6 +125,12 @@ func UpdateUser(pool *pgxpool.Pool, w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println(err.Error())
 		HandleApiErrors(w, http.StatusBadRequest, "")
+		return
+	}
+
+	if validationErr := validate.Struct(user); validationErr != nil {
+		log.Println(validationErr.Error())
+		HandleApiErrors(w, http.StatusBadRequest, validationErr.Error())
 		return
 	}
 
