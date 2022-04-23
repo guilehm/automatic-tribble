@@ -88,6 +88,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	user.DateJoined = time.Now()
 	if validationErr := validate.Struct(user); validationErr != nil {
 		log.Println(validationErr.Error())
 		HandleApiErrors(w, http.StatusBadRequest, validationErr.Error())
@@ -98,7 +99,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	sql := `INSERT INTO users (name, email, date_joined) VALUES ($1, $2, $3) RETURNING id`
 	err := db.DB.QueryRow(
-		context.Background(), sql, user.Name, user.Email, time.Now(),
+		context.Background(), sql, user.Name, user.Email, user.DateJoined,
 	).Scan(&id)
 
 	if err != nil {
