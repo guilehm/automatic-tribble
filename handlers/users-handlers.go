@@ -124,7 +124,7 @@ func UpdateUser(pool *pgxpool.Pool, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if validationErr := validate.Struct(user); validationErr != nil {
+	if validationErr := validate.StructPartial(user, user.Name); validationErr != nil {
 		log.Println(validationErr.Error())
 		HandleApiErrors(w, http.StatusBadRequest, validationErr.Error())
 		return
