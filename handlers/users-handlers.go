@@ -56,7 +56,7 @@ func GetUserList(pool *pgxpool.Pool, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var userList []models.User
+	userList := make([]models.User, 0)
 	for rows.Next() {
 		var user models.User
 		err = rows.Scan(&user.ID, &user.Name, &user.DateJoined)
