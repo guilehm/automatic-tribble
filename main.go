@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"time"
+	"tribble/db"
 	"tribble/handlers"
 	"tribble/middlewares"
 
@@ -20,13 +21,15 @@ func main() {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	pool, err := pgxpool.Connect(ctx, os.Getenv("DATABASE_URL"))
+
+	var err error
+	db.DB, err = pgxpool.Connect(ctx, os.Getenv("DATABASE_URL"))
 	if err != nil {
 		log.Fatal(fmt.Sprintf("Unable to connect to database: %v.", err))
 	}
-	defer pool.Close()
+	defer db.DB.Close()
 
-	err = pool.Ping(ctx)
+	err = db.DB.Ping(ctx)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -40,22 +43,12 @@ func main() {
 		AllowCredentials: true,
 	}).Handler(r)
 
-	r.HandleFunc("/users/{id}/", func(w http.ResponseWriter, r *http.Request) {
-		handlers.GetUser(pool, w, r)
-	}).Methods("GET")
-	r.HandleFunc("/users/{id}/", func(w http.ResponseWriter, r *http.Request) {
-		handlers.UpdateUser(pool, w, r)
-	}).Methods("PUT")
-	r.HandleFunc("/users/{id}/", func(w http.ResponseWriter, r *http.Request) {
-		handlers.DeleteUser(pool, w, r)
-	}).Methods("DELETE")
-	
-	r.HandleFunc("/users/", func(w http.ResponseWriter, r *http.Request) {
-		handlers.GetUserList(pool, w, r)
-	}).Methods("GET")
-	r.HandleFunc("/users/", func(w http.ResponseWriter, r *http.Request) {
-		handlers.CreateUser(pool, w, r)
-	}).Methods("POST")
+	r.HandleFunc("/users/", handlers.GetUserList).Methods("GET")
+	r.HandleFunc("/users/", handlers.CreateUser).Methods("POST")
+
+	r.HandleFunc("/users/{id}/", handlers.GetUser).Methods("GET")
+	r.HandleFunc("/users/{id}/", handlers.UpdateUser).Methods("PUT")
+	r.HandleFunc("/users/{id}/", handlers.DeleteUser).Methods("DELETE")
 
 	_ = http.ListenAndServe(":"+os.Getenv("PORT"), middlewares.LogRequest(handler))
 }
