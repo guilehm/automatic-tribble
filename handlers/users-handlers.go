@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"tribble/db"
 
 	"net/http"
 	"time"
@@ -14,19 +15,20 @@ import (
 	"github.com/go-playground/validator"
 	"github.com/gorilla/mux"
 	"github.com/jackc/pgconn"
-	"github.com/jackc/pgx/v4/pgxpool"
 )
 
-var validate = validator.New()
+var (
+	validate = validator.New()
+)
 
-func GetUser(pool *pgxpool.Pool, w http.ResponseWriter, r *http.Request) {
+func GetUser(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	vars := mux.Vars(r)
 	id := vars["id"]
 
 	sql := `SELECT id, name, date_joined FROM users WHERE id=$1`
-	row := pool.QueryRow(context.Background(), sql, id)
+	row := db.DB.QueryRow(context.Background(), sql, id)
 
 	var user models.User
 	if err := row.Scan(&user.ID, &user.Name, &user.DateJoined); err != nil {
@@ -44,11 +46,11 @@ func GetUser(pool *pgxpool.Pool, w http.ResponseWriter, r *http.Request) {
 	w.Write(response)
 }
 
-func GetUserList(pool *pgxpool.Pool, w http.ResponseWriter, r *http.Request) {
+func GetUserList(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	sql := `SELECT id, name, date_joined FROM users`
-	rows, err := pool.Query(context.Background(), sql)
+	rows, err := db.DB.Query(context.Background(), sql)
 
 	if err != nil {
 		log.Println(err.Error())
@@ -76,7 +78,7 @@ func GetUserList(pool *pgxpool.Pool, w http.ResponseWriter, r *http.Request) {
 	w.Write(response)
 }
 
-func CreateUser(pool *pgxpool.Pool, w http.ResponseWriter, r *http.Request) {
+func CreateUser(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	var user models.User
@@ -95,7 +97,7 @@ func CreateUser(pool *pgxpool.Pool, w http.ResponseWriter, r *http.Request) {
 	var id int
 
 	sql := `INSERT INTO users (name, email, date_joined) VALUES ($1, $2, $3) RETURNING id`
-	err := pool.QueryRow(
+	err := db.DB.QueryRow(
 		context.Background(), sql, user.Name, user.Email, time.Now(),
 	).Scan(&id)
 
@@ -112,7 +114,7 @@ func CreateUser(pool *pgxpool.Pool, w http.ResponseWriter, r *http.Request) {
 	w.Write(response)
 }
 
-func UpdateUser(pool *pgxpool.Pool, w http.ResponseWriter, r *http.Request) {
+func UpdateUser(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	vars := mux.Vars(r)
 	id := vars["id"]
@@ -131,7 +133,7 @@ func UpdateUser(pool *pgxpool.Pool, w http.ResponseWriter, r *http.Request) {
 	}
 
 	sql := `UPDATE users SET name=$2 WHERE id=$1`
-	res, err := pool.Exec(context.Background(), sql, id, user.Name)
+	res, err := db.DB.Exec(context.Background(), sql, id, user.Name)
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
@@ -158,14 +160,14 @@ func UpdateUser(pool *pgxpool.Pool, w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func DeleteUser(pool *pgxpool.Pool, w http.ResponseWriter, r *http.Request) {
+func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	vars := mux.Vars(r)
 	id := vars["id"]
 
 	sql := `DELETE FROM users where id=$1`
-	res, err := pool.Exec(context.Background(), sql, id)
+	res, err := db.DB.Exec(context.Background(), sql, id)
 	if err != nil {
 		log.Println(err.Error())
 		HandleApiErrors(w, http.StatusInternalServerError, "")
