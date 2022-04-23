@@ -103,7 +103,20 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		log.Println(err.Error())
-		// TODO: improve response for unique constraint violated
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			log.Printf("PgError: code: %v message: %v", pgErr.Code, pgErr.Message)
+			switch pgErr.Code {
+			case "23505":
+				// unique constraint violated
+				HandleApiErrors(w, http.StatusBadRequest, "this name already exists")
+				return
+			case "22001":
+				// value too long for type character
+				HandleApiErrors(w, http.StatusBadRequest, "value too long for type character")
+				return
+			}
+		}
 		HandleApiErrors(w, http.StatusInternalServerError, "")
 		return
 	}
