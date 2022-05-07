@@ -13,11 +13,11 @@ func HandleApiErrors(w http.ResponseWriter, status int, message string) {
 		message = http.StatusText(status)
 	}
 
-	jsonResponse, _ := json.Marshal(struct {
+	response, _ := json.Marshal(struct {
 		Error string `json:"error"`
 	}{message})
 	w.WriteHeader(status)
-	w.Write(jsonResponse)
+	w.Write(response)
 }
 
 func HandleDatabaseErrors(w http.ResponseWriter, pgErr *pgconn.PgError) {
