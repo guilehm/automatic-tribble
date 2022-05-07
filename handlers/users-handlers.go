@@ -6,10 +6,12 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"time"
 	"tribble/db"
 
+	"golang.org/x/crypto/bcrypt"
+
 	"net/http"
-	"time"
 	"tribble/models"
 
 	"github.com/go-playground/validator"
@@ -96,18 +98,43 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user.DateJoined = time.Now()
 	if validationErr := validate.Struct(user); validationErr != nil {
 		log.Println(validationErr.Error())
 		HandleApiErrors(w, http.StatusBadRequest, validationErr.Error())
 		return
 	}
 
+	password, err := hashPassword(user.Password)
+	if err != nil {
+		HandleApiErrors(w, http.StatusInternalServerError, "could not hash password")
+		return
+	}
+
+	token, refresh, err := generateTokens(user.Email, user.ID)
+	if err != nil {
+		HandleApiErrors(w, http.StatusInternalServerError, "could not generate tokens")
+		return
+	}
+
+	user.Password = password
+	user.Token = token
+	user.RefreshToken = refresh
+	user.DateJoined = time.Now()
+
 	var id int
 
-	sql := `INSERT INTO users (name, email, date_joined) VALUES ($1, $2, $3) RETURNING id`
-	err := db.DB.QueryRow(
-		context.Background(), sql, user.Name, user.Email, user.DateJoined,
+	sql := `INSERT INTO users (name, email, date_joined, password, token, refresh_token) 
+			VALUES ($1, $2, $3, $4, $5, $6) 
+			RETURNING id`
+	err = db.DB.QueryRow(
+		context.Background(),
+		sql,
+		user.Name,
+		user.Email,
+		user.DateJoined,
+		user.Password,
+		user.Token,
+		user.RefreshToken,
 	).Scan(&id)
 
 	if err != nil {
