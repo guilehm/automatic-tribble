@@ -3,6 +3,7 @@ package handlers
 import (
 	"log"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -19,10 +20,10 @@ type SignedDetails struct {
 const accessTokenLifetime = time.Minute * time.Duration(10)
 const refreshTokenLifetime = time.Hour * time.Duration(24)
 
-func generateTokens(email string, uid string) (signedToken string, signedRefreshToken string, err error) {
+func generateTokens(email string, userId int) (signedToken string, signedRefreshToken string, err error) {
 	claims := &SignedDetails{
 		Email: email,
-		Uid:   uid,
+		Uid:   strconv.Itoa(userId),
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Local().Add(accessTokenLifetime).Unix(),
 		},
