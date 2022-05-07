@@ -106,17 +106,8 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		log.Println(err.Error())
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
-			log.Printf("PgError: code: %v message: %v", pgErr.Code, pgErr.Message)
-			switch pgErr.Code {
-			case "23505":
-				// unique constraint violated
-				HandleApiErrors(w, http.StatusBadRequest, "this name already exists")
-				return
-			case "22001":
-				// value too long for type character
-				HandleApiErrors(w, http.StatusBadRequest, "value too long for type character")
-				return
-			}
+			HandleDatabaseErrors(w, pgErr)
+			return
 		}
 		HandleApiErrors(w, http.StatusInternalServerError, "")
 		return
@@ -151,17 +142,8 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
-			log.Printf("PgError: code: %v message: %v", pgErr.Code, pgErr.Message)
-			switch pgErr.Code {
-			case "23505":
-				// unique constraint violated
-				HandleApiErrors(w, http.StatusBadRequest, "this name already exists")
-				return
-			case "22001":
-				// value too long for type character
-				HandleApiErrors(w, http.StatusBadRequest, "value too long for type character")
-				return
-			}
+			HandleDatabaseErrors(w, pgErr)
+			return
 		}
 		HandleApiErrors(w, http.StatusInternalServerError, "")
 		return
