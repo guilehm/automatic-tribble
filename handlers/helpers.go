@@ -31,5 +31,7 @@ func HandleDatabaseErrors(w http.ResponseWriter, pgErr *pgconn.PgError) {
 		// value too long for type character
 		HandleApiErrors(w, http.StatusBadRequest, "value too long for type character")
 		return
+	default:
+		HandleApiErrors(w, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 	}
 }
