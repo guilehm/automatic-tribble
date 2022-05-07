@@ -2,7 +2,10 @@ package handlers
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
+
+	"github.com/jackc/pgconn"
 )
 
 func HandleApiErrors(w http.ResponseWriter, status int, message string) {
@@ -15,4 +18,18 @@ func HandleApiErrors(w http.ResponseWriter, status int, message string) {
 	}{message})
 	w.WriteHeader(status)
 	w.Write(jsonResponse)
+}
+
+func HandleDatabaseErrors(w http.ResponseWriter, pgErr *pgconn.PgError) {
+	log.Printf("PgError: code: %v message: %v", pgErr.Code, pgErr.Message)
+	switch pgErr.Code {
+	case "23505":
+		// unique constraint violated
+		HandleApiErrors(w, http.StatusBadRequest, "this name already exists")
+		return
+	case "22001":
+		// value too long for type character
+		HandleApiErrors(w, http.StatusBadRequest, "value too long for type character")
+		return
+	}
 }
