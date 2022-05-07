@@ -19,3 +19,8 @@ type Player struct {
 	PositionX int
 	PositionY int
 }
+
+type Tokens struct {
+	Token        string `json:"token"`
+	RefreshToken string `json:"refresh_token"`
+}
