@@ -8,3 +8,11 @@ type User struct {
 	Email      string    `json:"email" validate:"required,email"`
 	DateJoined time.Time `json:"date_joined" validate:"required"`
 }
+
+type Player struct {
+	UserID    int
+	XP        int
+	Sprite    string
+	PositionX int
+	PositionY int
+}
