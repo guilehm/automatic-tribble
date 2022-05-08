@@ -103,6 +103,14 @@ func RefreshToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	sql = `UPDATE users SET token = $1, refresh_token = $2 WHERE id=$3`
+	_, err = db.DB.Query(context.Background(), sql, token, refresh, user.ID)
+
+	if err != nil {
+		HandleApiErrors(w, http.StatusInternalServerError, "could not update tokens")
+		return
+	}
+
 	response, _ := json.Marshal(struct {
 		Token   string `json:"token"`
 		Refresh string `json:"refresh"`
