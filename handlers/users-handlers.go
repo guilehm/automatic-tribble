@@ -31,6 +31,14 @@ func hashPassword(password string) (string, error) {
 	return string(bytes), nil
 }
 
+func verifyPassword(userPassword string, providedPassword string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(userPassword), []byte(providedPassword))
+	if err != nil {
+		return false
+	}
+	return true
+}
+
 func GetUser(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
