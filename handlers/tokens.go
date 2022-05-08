@@ -77,3 +77,35 @@ func ValidateToken(w http.ResponseWriter, r *http.Request) {
 	}{Ok: true})
 	w.Write(response)
 }
+
+func RefreshToken(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	var tokens models.Tokens
+
+	if err := json.NewDecoder(r.Body).Decode(&tokens); err != nil {
+		HandleApiErrors(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	sql := `SELECT id, email FROM users WHERE refresh_token=$1`
+	row := db.DB.QueryRow(context.Background(), sql, tokens.RefreshToken)
+
+	var user models.User
+	if err := row.Scan(&user.ID, &user.Email); err != nil {
+		log.Println(err.Error())
+		HandleApiErrors(w, http.StatusNotFound, "")
+		return
+	}
+
+	token, refresh, err := generateTokens(user.Email, user.ID)
+	if err != nil {
+		HandleApiErrors(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	response, _ := json.Marshal(struct {
+		Token   string `json:"token"`
+		Refresh string `json:"refresh"`
+	}{token, refresh})
+	w.Write(response)
+}
