@@ -46,6 +46,7 @@ func main() {
 	r.HandleFunc("/users/", handlers.GetUserList).Methods("GET")
 	r.HandleFunc("/users/", handlers.CreateUser).Methods("POST")
 	r.HandleFunc("/users/validate/", handlers.ValidateToken).Methods("POST")
+	r.HandleFunc("/users/refresh/", handlers.RefreshToken).Methods("POST")
 
 	r.HandleFunc("/users/{id}/", handlers.GetUser).Methods("GET")
 	r.HandleFunc("/users/{id}/", handlers.UpdateUser).Methods("PUT")
