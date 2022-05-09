@@ -12,6 +12,11 @@ type User struct {
 	DateJoined   time.Time `json:"date_joined"`
 }
 
+type UserLogin struct {
+	Email    string `json:"email" validate:"email,required"`
+	Password string `json:"password" validate:"required"`
+}
+
 type Player struct {
 	UserID    int
 	XP        int
