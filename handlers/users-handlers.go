@@ -219,3 +219,38 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusNoContent)
 }
+
+func Login(w http.ResponseWriter, r *http.Request) {
+	var userLogin models.UserLogin
+
+	if err := json.NewDecoder(r.Body).Decode(&userLogin); err != nil {
+		HandleApiErrors(w, http.StatusBadRequest, "")
+		return
+	}
+	if err := validate.Struct(userLogin); err != nil {
+		HandleApiErrors(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	var id int
+	var password string
+	sql := `SELECT id, password FROM users WHERE email=$1`
+	row := db.DB.QueryRow(context.Background(), sql, userLogin.Email)
+
+	if err := row.Scan(&id, &password); err != nil {
+		log.Println(err.Error())
+		HandleApiErrors(w, http.StatusNotFound, "")
+		return
+	}
+
+	ok := verifyPassword(password, userLogin.Password)
+	if !ok {
+		HandleApiErrors(w, http.StatusBadRequest, "wrong password")
+		return
+	}
+
+	// TODO:
+	// generate tokens
+	// update tokens
+	// response for new tokens
+}
