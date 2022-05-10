@@ -270,7 +270,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	token, refresh, err := generateTokens(userLogin.Email, id)
 
 	sql = `UPDATE users SET token=$1, refresh_token=$2 WHERE id=$3`
-	_, err = db.DB.Query(context.Background(), sql, token, refresh, id)
+	_, err = db.DB.Exec(ctx, sql, token, refresh, id)
 
 	if err != nil {
 		HandleApiErrors(w, http.StatusInternalServerError, "could not update tokens")
