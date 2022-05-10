@@ -246,12 +246,25 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 	ok := verifyPassword(password, userLogin.Password)
 	if !ok {
-		HandleApiErrors(w, http.StatusBadRequest, "wrong password")
+		HandleApiErrors(w, http.StatusBadRequest, "invalid password")
 		return
 	}
 
-	// TODO:
-	// generate tokens
-	// update tokens
-	// response for new tokens
+	token, refresh, err := generateTokens(userLogin.Email, id)
+
+	sql = `UPDATE users SET token=$1, refresh_token=$2 WHERE id=$3`
+	_, err = db.DB.Query(context.Background(), sql, token, refresh, id)
+
+	if err != nil {
+		HandleApiErrors(w, http.StatusInternalServerError, "could not update tokens")
+		return
+	}
+
+	response, _ := json.Marshal(struct {
+		Id      int    `json:"id"`
+		Token   string `json:"token"`
+		Refresh string `json:"refresh_token"`
+	}{id, token, refresh})
+	w.Write(response)
+
 }
