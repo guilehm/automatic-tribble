@@ -25,7 +25,7 @@ func HandleDatabaseErrors(w http.ResponseWriter, pgErr *pgconn.PgError) {
 	switch pgErr.Code {
 	case "23505":
 		// unique constraint violated
-		HandleApiErrors(w, http.StatusBadRequest, "this name already exists")
+		HandleApiErrors(w, http.StatusBadRequest, pgErr.Message)
 		return
 	case "22001":
 		// value too long for type character
