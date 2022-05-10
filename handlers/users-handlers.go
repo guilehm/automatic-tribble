@@ -221,6 +221,7 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func Login(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 	var userLogin models.UserLogin
 
 	if err := json.NewDecoder(r.Body).Decode(&userLogin); err != nil {
