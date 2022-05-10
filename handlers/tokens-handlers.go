@@ -63,8 +63,11 @@ func ValidateToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
 	sql := `SELECT id FROM users WHERE refresh_token=$1`
-	row := db.DB.QueryRow(context.Background(), sql, tokens.RefreshToken)
+	row := db.DB.QueryRow(ctx, sql, tokens.RefreshToken)
 
 	var user models.User
 	if err := row.Scan(&user.ID); err != nil {
@@ -87,8 +90,11 @@ func RefreshToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
 	sql := `SELECT id, email FROM users WHERE refresh_token=$1`
-	row := db.DB.QueryRow(context.Background(), sql, tokens.RefreshToken)
+	row := db.DB.QueryRow(ctx, sql, tokens.RefreshToken)
 
 	var user models.User
 	if err := row.Scan(&user.ID, &user.Email); err != nil {

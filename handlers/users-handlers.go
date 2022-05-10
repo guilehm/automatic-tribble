@@ -45,8 +45,11 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
 
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
 	sql := `SELECT id, name, date_joined FROM users WHERE id=$1`
-	row := db.DB.QueryRow(context.Background(), sql, id)
+	row := db.DB.QueryRow(ctx, sql, id)
 
 	var user models.User
 	if err := row.Scan(&user.ID, &user.Name, &user.DateJoined); err != nil {
@@ -67,8 +70,11 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 func GetUserList(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
 	sql := `SELECT id, name, date_joined FROM users`
-	rows, err := db.DB.Query(context.Background(), sql)
+	rows, err := db.DB.Query(ctx, sql)
 
 	if err != nil {
 		log.Println(err.Error())
@@ -129,13 +135,15 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	user.RefreshToken = refresh
 	user.DateJoined = time.Now()
 
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
 	var id int
 
 	sql := `INSERT INTO users (name, email, date_joined, password, token, refresh_token) 
 			VALUES ($1, $2, $3, $4, $5, $6) 
 			RETURNING id`
 	err = db.DB.QueryRow(
-		context.Background(),
+		ctx,
 		sql,
 		user.Name,
 		user.Email,
@@ -180,8 +188,11 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
 	sql := `UPDATE users SET name=$2 WHERE id=$1`
-	res, err := db.DB.Exec(context.Background(), sql, id, user.Name)
+	res, err := db.DB.Exec(ctx, sql, id, user.Name)
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
@@ -205,8 +216,11 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
 
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
 	sql := `DELETE FROM users where id=$1`
-	res, err := db.DB.Exec(context.Background(), sql, id)
+	res, err := db.DB.Exec(ctx, sql, id)
 	if err != nil {
 		log.Println(err.Error())
 		HandleApiErrors(w, http.StatusInternalServerError, "")
@@ -233,10 +247,13 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
 	var id int
 	var password string
 	sql := `SELECT id, password FROM users WHERE email=$1`
-	row := db.DB.QueryRow(context.Background(), sql, userLogin.Email)
+	row := db.DB.QueryRow(ctx, sql, userLogin.Email)
 
 	if err := row.Scan(&id, &password); err != nil {
 		log.Println(err.Error())
