@@ -67,10 +67,9 @@ func ValidateToken(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 
 	sql := `SELECT id FROM users WHERE refresh_token=$1`
-	row := db.DB.QueryRow(ctx, sql, tokens.RefreshToken)
 
 	var user models.User
-	if err := row.Scan(&user.ID); err != nil {
+	if err := db.DB.QueryRow(ctx, sql, tokens.RefreshToken).Scan(&user.ID); err != nil {
 		log.Println(err.Error())
 		HandleApiErrors(w, http.StatusNotFound, "")
 		return
@@ -94,10 +93,9 @@ func RefreshToken(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 
 	sql := `SELECT id, email FROM users WHERE refresh_token=$1`
-	row := db.DB.QueryRow(ctx, sql, tokens.RefreshToken)
 
 	var user models.User
-	if err := row.Scan(&user.ID, &user.Email); err != nil {
+	if err := db.DB.QueryRow(ctx, sql, tokens.RefreshToken).Scan(&user.ID, &user.Email); err != nil {
 		log.Println(err.Error())
 		HandleApiErrors(w, http.StatusNotFound, "")
 		return

@@ -49,10 +49,9 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 
 	sql := `SELECT id, name, date_joined FROM users WHERE id=$1`
-	row := db.DB.QueryRow(ctx, sql, id)
 
 	var user models.User
-	if err := row.Scan(&user.ID, &user.Name, &user.DateJoined); err != nil {
+	if err := db.DB.QueryRow(ctx, sql, id).Scan(&user.ID, &user.Name, &user.DateJoined); err != nil {
 		log.Println(err.Error())
 		HandleApiErrors(w, http.StatusNotFound, "")
 		return
@@ -253,9 +252,8 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	var id int
 	var password string
 	sql := `SELECT id, password FROM users WHERE email=$1`
-	row := db.DB.QueryRow(ctx, sql, userLogin.Email)
 
-	if err := row.Scan(&id, &password); err != nil {
+	if err := db.DB.QueryRow(ctx, sql, userLogin.Email).Scan(&id, &password); err != nil {
 		log.Println(err.Error())
 		HandleApiErrors(w, http.StatusNotFound, "")
 		return
