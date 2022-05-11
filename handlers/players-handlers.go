@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strconv"
 	"tribble/models"
+	"tribble/settings"
 )
 
 func CreatePlayer(w http.ResponseWriter, r *http.Request) {
@@ -24,9 +26,17 @@ func CreatePlayer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// player.UserID = r.Context().Value(settings.I).(int)
+	userId, err := strconv.Atoi(r.Context().Value(settings.I).(string))
+	if err != nil {
+		log.Println(err.Error())
+		HandleApiErrors(w, http.StatusInternalServerError, "")
+		return
+	}
+	player.UserID = userId
 	// TODO: position cannot be hardcoded
 	player.PositionX = 8
 	player.PositionY = 8
+
+	// TODO: insert player on database
 
 }
