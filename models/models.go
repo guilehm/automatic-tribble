@@ -20,7 +20,7 @@ type UserLogin struct {
 type Player struct {
 	UserID    int
 	XP        int
-	Sprite    string `validate:"assassin|warrior|templar|archer|mage"`
+	Sprite    string `validate:"oneof=assassin warrior templar archer mage"`
 	PositionX int
 	PositionY int
 }
