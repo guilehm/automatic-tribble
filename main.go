@@ -53,5 +53,7 @@ func main() {
 	r.HandleFunc("/users/{id}/", handlers.UpdateUser).Methods("PUT")
 	r.HandleFunc("/users/{id}/", handlers.DeleteUser).Methods("DELETE")
 
+	r.HandleFunc("/players/", middlewares.Authentication(handlers.CreatePlayer)).Methods("POST")
+
 	_ = http.ListenAndServe(":"+os.Getenv("PORT"), middlewares.LogRequest(handler))
 }
