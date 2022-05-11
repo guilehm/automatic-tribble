@@ -3,32 +3,54 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
-	"os"
 	"strconv"
 	"time"
 	"tribble/db"
 	"tribble/models"
+	"tribble/settings"
 
 	"github.com/dgrijalva/jwt-go"
 )
 
-var SecretKey = os.Getenv("JWT_SECRET_KEY")
-
 type SignedDetails struct {
 	Email string
-	Uid   string
+	ID    string
 	jwt.StandardClaims
 }
 
 const accessTokenLifetime = time.Minute * time.Duration(10)
 const refreshTokenLifetime = time.Hour * time.Duration(24)
 
+func CheckToken(signedToken string) (claims *SignedDetails, err error) {
+	token, err := jwt.ParseWithClaims(
+		signedToken,
+		&SignedDetails{},
+		func(token *jwt.Token) (interface{}, error) {
+			return []byte(settings.JWTSecretKey), nil
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	claims, ok := token.Claims.(*SignedDetails)
+	if !ok {
+		return nil, errors.New("invalid token")
+	}
+
+	if claims.ExpiresAt < time.Now().Local().Unix() {
+		return nil, errors.New("token is expired")
+	}
+	return claims, nil
+}
+
 func generateTokens(email string, userId int) (signedToken string, signedRefreshToken string, err error) {
 	claims := &SignedDetails{
 		Email: email,
-		Uid:   strconv.Itoa(userId),
+		ID:    strconv.Itoa(userId),
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Local().Add(accessTokenLifetime).Unix(),
 		},
@@ -40,13 +62,13 @@ func generateTokens(email string, userId int) (signedToken string, signedRefresh
 		},
 	}
 
-	token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString([]byte(SecretKey))
+	token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString([]byte(settings.JWTSecretKey))
 	if err != nil {
 		log.Printf("could not create claims. %v\n", err.Error())
 		return
 	}
 
-	refreshToken, err := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshClaims).SignedString([]byte(SecretKey))
+	refreshToken, err := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshClaims).SignedString([]byte(settings.JWTSecretKey))
 	if err != nil {
 		log.Printf("could not create claims. %v\n", err.Error())
 		return
