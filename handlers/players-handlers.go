@@ -1,12 +1,18 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 	"strconv"
+	"time"
+	"tribble/db"
 	"tribble/models"
 	"tribble/settings"
+
+	"github.com/jackc/pgconn"
 )
 
 func CreatePlayer(w http.ResponseWriter, r *http.Request) {
@@ -38,5 +44,39 @@ func CreatePlayer(w http.ResponseWriter, r *http.Request) {
 	player.PositionY = 8
 
 	// TODO: insert player on database
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	sql := `INSERT INTO players (user_id, xp, sprite, position_x, position_y)
+			VALUES ($1, $2, $3, $4, $5)
+			RETURNING id`
+
+	var playerID int
+	err = db.DB.QueryRow(
+		ctx,
+		sql,
+		player.UserID,
+		player.XP,
+		player.Sprite,
+		player.PositionX,
+		player.PositionY,
+	).Scan(&playerID)
+
+	if err != nil {
+		log.Println(err.Error())
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			HandleDatabaseErrors(w, pgErr)
+			return
+		}
+		HandleApiErrors(w, http.StatusInternalServerError, "")
+		return
+	}
+
+	response, _ := json.Marshal(struct {
+		Id int `json:"id"`
+	}{playerID})
+	w.Write(response)
 
 }
