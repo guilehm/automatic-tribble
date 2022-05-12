@@ -6,8 +6,10 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"strconv"
 	"time"
 	"tribble/db"
+	"tribble/settings"
 
 	"golang.org/x/crypto/bcrypt"
 
@@ -163,8 +165,13 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdateUser(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	id := vars["id"]
+
+	userId, err := strconv.Atoi(r.Context().Value(settings.I).(string))
+	if err != nil {
+		log.Println(err.Error())
+		HandleApiErrors(w, http.StatusInternalServerError, "")
+		return
+	}
 
 	var user models.User
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
@@ -183,7 +190,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 
 	sql := `UPDATE users SET name=$2 WHERE id=$1`
-	res, err := db.DB.Exec(ctx, sql, id, user.Name)
+	res, err := db.DB.Exec(ctx, sql, userId, user.Name)
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
