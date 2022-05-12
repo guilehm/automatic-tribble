@@ -18,11 +18,12 @@ type UserLogin struct {
 }
 
 type Player struct {
-	UserID    int
-	XP        int
-	Sprite    string `validate:"oneof=assassin warrior templar archer mage"`
-	PositionX int
-	PositionY int
+	UserID    int    `json:"user_id,omitempty"`
+	Name      string `json:"name"`
+	XP        int    `json:"xp"`
+	Sprite    string `json:"sprite" validate:"oneof=assassin warrior templar archer mage"`
+	PositionX int    `json:"position_x"`
+	PositionY int    `json:"position_y"`
 }
 
 type Tokens struct {
