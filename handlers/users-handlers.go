@@ -38,7 +38,7 @@ func verifyPassword(userPassword string, providedPassword string) bool {
 	return err == nil
 }
 
-func GetUser(w http.ResponseWriter, r *http.Request) {
+func GetUserDetail(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
 

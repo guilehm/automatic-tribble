@@ -44,6 +44,7 @@ func main() {
 	}).Handler(r)
 
 	r.HandleFunc("/users/", handlers.GetUserList).Methods("GET")
+	r.HandleFunc("/users/{id}/", handlers.GetUserDetail).Methods("GET")
 	r.HandleFunc("/users/", handlers.CreateUser).Methods("POST")
 	r.HandleFunc("/users/", middlewares.Authentication(handlers.UpdateUser)).Methods("PUT")
 	r.HandleFunc("/users/validate/", handlers.ValidateToken).Methods("POST")
