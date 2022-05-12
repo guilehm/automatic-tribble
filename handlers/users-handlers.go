@@ -210,14 +210,18 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 
 func DeleteUser(w http.ResponseWriter, r *http.Request) {
 
-	vars := mux.Vars(r)
-	id := vars["id"]
+	userId, err := strconv.Atoi(r.Context().Value(settings.I).(string))
+	if err != nil {
+		log.Println(err.Error())
+		HandleApiErrors(w, http.StatusInternalServerError, "")
+		return
+	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	sql := `DELETE FROM users where id=$1`
-	res, err := db.DB.Exec(ctx, sql, id)
+	sql := `DELETE FROM users WHERE id=$1`
+	res, err := db.DB.Exec(ctx, sql, userId)
 	if err != nil {
 		log.Println(err.Error())
 		HandleApiErrors(w, http.StatusInternalServerError, "")
