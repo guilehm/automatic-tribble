@@ -79,3 +79,53 @@ func CreatePlayer(w http.ResponseWriter, r *http.Request) {
 	}{playerID})
 	_, _ = w.Write(response)
 }
+
+func GetPlayerList(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	userId, err := strconv.Atoi(r.Context().Value(settings.I).(string))
+	if err != nil {
+		log.Println(err.Error())
+		HandleApiErrors(w, http.StatusInternalServerError, "")
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	sql := `SELECT name, xp, sprite, position_x, position_y FROM players WHERE user_id=$1`
+	rows, err := db.DB.Query(ctx, sql, userId)
+
+	if err != nil {
+		log.Println(err.Error())
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			HandleDatabaseErrors(w, pgErr)
+			return
+		}
+		HandleApiErrors(w, http.StatusInternalServerError, "")
+		return
+	}
+
+	players := make([]models.Player, 0)
+	for rows.Next() {
+		var player models.Player
+		err = rows.Scan(
+			&player.Name, &player.XP, &player.Sprite, &player.PositionX, &player.PositionY,
+		)
+		if err != nil {
+			log.Printf("could not scan player: %v", err.Error())
+			HandleApiErrors(w, http.StatusInternalServerError, "")
+			return
+		}
+		players = append(players, player)
+	}
+
+	response, err := json.Marshal(players)
+	if err != nil {
+		log.Println(err.Error())
+		HandleApiErrors(w, http.StatusInternalServerError, "")
+		return
+	}
+	_, _ = w.Write(response)
+}
