@@ -224,7 +224,6 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if rowsAffected := res.RowsAffected(); rowsAffected == 0 {
-		log.Println(err.Error())
 		HandleApiErrors(w, http.StatusNotFound, "")
 		return
 	}
