@@ -16,7 +16,6 @@ import (
 )
 
 func CreatePlayer(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
 
 	var player models.Player
 
@@ -81,7 +80,6 @@ func CreatePlayer(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetPlayerList(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
 
 	userId, err := strconv.Atoi(r.Context().Value(settings.I).(string))
 	if err != nil {

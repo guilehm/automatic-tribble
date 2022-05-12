@@ -77,7 +77,7 @@ func generateTokens(email string, userId int) (signedToken string, signedRefresh
 }
 
 func ValidateToken(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
+
 	var tokens models.Tokens
 
 	if err := json.NewDecoder(r.Body).Decode(&tokens); err != nil {
@@ -103,7 +103,7 @@ func ValidateToken(w http.ResponseWriter, r *http.Request) {
 }
 
 func RefreshToken(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
+
 	var tokens models.Tokens
 
 	if err := json.NewDecoder(r.Body).Decode(&tokens); err != nil {

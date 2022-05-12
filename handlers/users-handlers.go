@@ -37,8 +37,6 @@ func verifyPassword(userPassword string, providedPassword string) bool {
 }
 
 func GetUser(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-
 	vars := mux.Vars(r)
 	id := vars["id"]
 
@@ -64,7 +62,6 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetUserList(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
@@ -99,7 +96,6 @@ func GetUserList(w http.ResponseWriter, r *http.Request) {
 }
 
 func CreateUser(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
 
 	var user models.User
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
@@ -167,7 +163,6 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdateUser(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
 	vars := mux.Vars(r)
 	id := vars["id"]
 
@@ -207,7 +202,6 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteUser(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
 
 	vars := mux.Vars(r)
 	id := vars["id"]
@@ -231,7 +225,7 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func Login(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
+
 	var userLogin models.UserLogin
 
 	if err := json.NewDecoder(r.Body).Decode(&userLogin); err != nil {
