@@ -46,13 +46,13 @@ func main() {
 	r.HandleFunc("/users/", handlers.GetUserList).Methods("GET")
 	r.HandleFunc("/users/{id}/", handlers.GetUserDetail).Methods("GET")
 	r.HandleFunc("/users/", handlers.CreateUser).Methods("POST")
+
 	r.HandleFunc("/users/", middlewares.Authentication(handlers.UpdateUser)).Methods("PUT")
+	r.HandleFunc("/users/", middlewares.Authentication(handlers.DeleteUser)).Methods("DELETE")
+
 	r.HandleFunc("/users/validate/", handlers.ValidateToken).Methods("POST")
 	r.HandleFunc("/users/refresh/", handlers.RefreshToken).Methods("POST")
 	r.HandleFunc("/users/login/", handlers.Login).Methods("POST")
-
-	r.HandleFunc("/users/{id}/", handlers.GetUser).Methods("GET")
-	r.HandleFunc("/users/{id}/", handlers.DeleteUser).Methods("DELETE")
 
 	r.HandleFunc("/players/", middlewares.Authentication(handlers.CreatePlayer)).Methods("POST")
 	r.HandleFunc("/players/", middlewares.Authentication(handlers.GetPlayerList)).Methods("GET")
