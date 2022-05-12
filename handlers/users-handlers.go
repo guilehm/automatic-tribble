@@ -33,10 +33,7 @@ func hashPassword(password string) (string, error) {
 
 func verifyPassword(userPassword string, providedPassword string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(userPassword), []byte(providedPassword))
-	if err != nil {
-		return false
-	}
-	return true
+	return err == nil
 }
 
 func GetUser(w http.ResponseWriter, r *http.Request) {
