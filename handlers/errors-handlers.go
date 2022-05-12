@@ -17,7 +17,7 @@ func HandleApiErrors(w http.ResponseWriter, status int, message string) {
 		Error string `json:"error"`
 	}{message})
 	w.WriteHeader(status)
-	w.Write(response)
+	_, _ = w.Write(response)
 }
 
 func HandleDatabaseErrors(w http.ResponseWriter, pgErr *pgconn.PgError) {

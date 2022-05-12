@@ -99,7 +99,7 @@ func ValidateToken(w http.ResponseWriter, r *http.Request) {
 	response, _ := json.Marshal(struct {
 		Ok bool `json:"ok"`
 	}{Ok: true})
-	w.Write(response)
+	_, _ = w.Write(response)
 }
 
 func RefreshToken(w http.ResponseWriter, r *http.Request) {
@@ -141,5 +141,5 @@ func RefreshToken(w http.ResponseWriter, r *http.Request) {
 		Token   string `json:"token"`
 		Refresh string `json:"refresh"`
 	}{token, refresh})
-	w.Write(response)
+	_, _ = w.Write(response)
 }

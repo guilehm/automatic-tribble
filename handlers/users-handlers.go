@@ -60,7 +60,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 		HandleApiErrors(w, http.StatusInternalServerError, "")
 		return
 	}
-	w.Write(response)
+	_, _ = w.Write(response)
 }
 
 func GetUserList(w http.ResponseWriter, r *http.Request) {
@@ -95,7 +95,7 @@ func GetUserList(w http.ResponseWriter, r *http.Request) {
 		HandleApiErrors(w, http.StatusInternalServerError, "")
 		return
 	}
-	w.Write(response)
+	_, _ = w.Write(response)
 }
 
 func CreateUser(w http.ResponseWriter, r *http.Request) {
@@ -163,7 +163,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	response, _ := json.Marshal(struct {
 		ID string `json:"id"`
 	}{ID: fmt.Sprintf("%d", id)})
-	w.Write(response)
+	_, _ = w.Write(response)
 }
 
 func UpdateUser(w http.ResponseWriter, r *http.Request) {
@@ -277,6 +277,6 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		Token   string `json:"token"`
 		Refresh string `json:"refresh_token"`
 	}{id, token, refresh})
-	w.Write(response)
+	_, _ = w.Write(response)
 
 }

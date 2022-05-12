@@ -77,6 +77,5 @@ func CreatePlayer(w http.ResponseWriter, r *http.Request) {
 	response, _ := json.Marshal(struct {
 		Id int `json:"id"`
 	}{playerID})
-	w.Write(response)
-
+	_, _ = w.Write(response)
 }
