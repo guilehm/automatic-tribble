@@ -56,5 +56,5 @@ func main() {
 	r.HandleFunc("/players/", middlewares.Authentication(handlers.CreatePlayer)).Methods("POST")
 	r.HandleFunc("/players/", middlewares.Authentication(handlers.GetPlayerList)).Methods("GET")
 
-	_ = http.ListenAndServe(":"+os.Getenv("PORT"), middlewares.LogRequest(handler))
+	_ = http.ListenAndServe(":"+os.Getenv("PORT"), middlewares.LogRequest(middlewares.SetHeaders(handler)))
 }
