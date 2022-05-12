@@ -14,3 +14,4 @@ ALTER TABLE players
         FOREIGN KEY (user_id) REFERENCES users (id);
 
 CREATE INDEX players_user_id ON players (user_id);
+CREATE UNIQUE INDEX name_unique_players_idx on players (LOWER(name));

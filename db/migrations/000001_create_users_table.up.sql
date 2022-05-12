@@ -9,4 +9,5 @@ CREATE TABLE users
     date_joined   timestamp with time zone NOT NULL
 );
 
-CREATE UNIQUE INDEX email_unique_idx on users (LOWER(email));
+CREATE UNIQUE INDEX name_unique_users_idx on users (LOWER(name));
+CREATE UNIQUE INDEX email_unique_users_idx on users (LOWER(email));
