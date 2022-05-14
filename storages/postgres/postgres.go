@@ -48,11 +48,11 @@ func (p Postgres) GetUser(ctx context.Context, ID int) (*models.User, error) {
 }
 
 func (p Postgres) GetUserByEmail(ctx context.Context, email string) (*models.User, error) {
-	sql := `SELECT id, name, email, date_joined FROM users WHERE email=$1`
+	sql := `SELECT id, name, email, password, date_joined FROM users WHERE email=$1`
 
 	var user models.User
 	if err := p.db.QueryRow(ctx, sql, email).Scan(
-		&user.ID, &user.Name, &user.Email, &user.DateJoined,
+		&user.ID, &user.Name, &user.Email, &user.Password, &user.DateJoined,
 	); err != nil {
 		return &models.User{}, err
 	}
