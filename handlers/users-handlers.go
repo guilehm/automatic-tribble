@@ -216,8 +216,6 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	var id int
-
 	user, err := storages.DB.GetUserByEmail(ctx, userLogin.Email)
 	if err != nil {
 		log.Println(err.Error())
@@ -231,13 +229,13 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, refresh, err := generateTokens(userLogin.Email, id)
+	token, refresh, err := generateTokens(userLogin.Email, user.ID)
 	if err != nil {
 		HandleApiErrors(w, http.StatusInternalServerError, "could not update tokens")
 		return
 	}
 
-	if err = storages.DB.UpdateUserTokens(ctx, id, token, refresh); err != nil {
+	if err = storages.DB.UpdateUserTokens(ctx, user.ID, token, refresh); err != nil {
 		HandleApiErrors(w, http.StatusInternalServerError, "could not update tokens")
 		return
 	}
@@ -251,6 +249,6 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		Id      int    `json:"id"`
 		Token   string `json:"token"`
 		Refresh string `json:"refresh_token"`
-	}{id, token, refresh})
+	}{user.ID, token, refresh})
 	_, _ = w.Write(response)
 }
