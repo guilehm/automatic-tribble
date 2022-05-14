@@ -60,10 +60,14 @@ func (p Postgres) GetUserByEmail(ctx context.Context, email string) (*models.Use
 }
 
 func (p Postgres) GetUserList(ctx context.Context) ([]*models.User, error) {
+	users := make([]*models.User, 0)
+
 	sql := `SELECT id, name, email, date_joined FROM users`
 	rows, err := p.db.Query(ctx, sql)
+	if err != nil {
+		return users, err
+	}
 
-	users := make([]*models.User, 0)
 	for rows.Next() {
 		var user models.User
 		err = rows.Scan(&user.ID, &user.Name, &user.Email, &user.DateJoined)
