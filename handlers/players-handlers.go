@@ -109,7 +109,11 @@ func GetPlayerList(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		var player models.Player
 		err = rows.Scan(
-			&player.Name, &player.XP, &player.Sprite, &player.PositionX, &player.PositionY,
+			&player.Name,
+			&player.XP,
+			&player.Sprite,
+			&player.PositionX,
+			&player.PositionY,
 		)
 		if err != nil {
 			log.Printf("could not scan player: %v", err.Error())

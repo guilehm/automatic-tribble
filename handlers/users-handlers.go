@@ -286,5 +286,4 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		Refresh string `json:"refresh_token"`
 	}{id, token, refresh})
 	_, _ = w.Write(response)
-
 }
