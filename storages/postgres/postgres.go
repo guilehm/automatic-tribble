@@ -197,3 +197,13 @@ func (p Postgres) CreatePlayer(ctx context.Context, player models.Player) (*mode
 
 	return &player, nil
 }
+
+func (p Postgres) ValidateToken(ctx context.Context, refresh string) (bool, error) {
+	sql := `SELECT id FROM users WHERE refresh_token=$1`
+	var userId int
+	err := p.db.QueryRow(ctx, sql, refresh).Scan(&userId)
+	if err != nil {
+		return false, err
+	}
+	return true, nil
+}
