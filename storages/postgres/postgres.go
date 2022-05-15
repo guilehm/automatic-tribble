@@ -42,7 +42,7 @@ func (p Postgres) GetUser(ctx context.Context, ID int) (*models.User, error) {
 	if err := p.db.QueryRow(ctx, sql, ID).Scan(
 		&user.ID, &user.Name, &user.Email, &user.DateJoined,
 	); err != nil {
-		return &models.User{}, err
+		return nil, err
 	}
 	return &user, nil
 }
@@ -108,7 +108,7 @@ func (p Postgres) CreateUser(ctx context.Context, user models.User) (*models.Use
 		user.Token,
 		user.RefreshToken,
 	).Scan(&id); err != nil {
-		return &models.User{}, err
+		return nil, err
 	}
 	user.ID = id
 	return &user, nil
@@ -119,11 +119,11 @@ func (p Postgres) UpdateUser(ctx context.Context, user models.User) (*models.Use
 	sql := `UPDATE users SET name=$2 WHERE id=$1`
 	res, err := p.db.Exec(ctx, sql, user.ID, user.Name)
 	if err != nil {
-		return &models.User{}, err
+		return nil, err
 	}
 
 	if rowsAffected := res.RowsAffected(); rowsAffected == 0 {
-		return &models.User{}, errors.New("user not found")
+		return nil, errors.New("user not found")
 	}
 
 	return &user, nil
