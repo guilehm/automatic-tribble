@@ -54,7 +54,19 @@ func (p Postgres) GetUserByEmail(ctx context.Context, email string) (*models.Use
 	if err := p.db.QueryRow(ctx, sql, email).Scan(
 		&user.ID, &user.Name, &user.Email, &user.Password, &user.DateJoined,
 	); err != nil {
-		return &models.User{}, err
+		return nil, err
+	}
+	return &user, nil
+}
+
+func (p Postgres) GetUserByRefresh(ctx context.Context, refresh string) (*models.User, error) {
+	sql := `SELECT id, name, email, password, date_joined FROM users WHERE refresh_token=$1`
+
+	var user models.User
+	if err := p.db.QueryRow(ctx, sql, refresh).Scan(
+		&user.ID, &user.Name, &user.Email, &user.Password, &user.DateJoined,
+	); err != nil {
+		return nil, err
 	}
 	return &user, nil
 }
