@@ -18,6 +18,7 @@ type UserLogin struct {
 }
 
 type Player struct {
+	ID        int    `json:"id,omitempty"`
 	UserID    int    `json:"user_id,omitempty"`
 	Name      string `json:"name"`
 	XP        int    `json:"xp"`
