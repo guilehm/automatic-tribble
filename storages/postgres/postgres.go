@@ -146,3 +146,29 @@ func (p Postgres) DeleteUser(ctx context.Context, ID int) error {
 	}
 	return nil
 }
+
+func (p Postgres) GetPlayerList(ctx context.Context, ID int) ([]*models.Player, error) {
+	sql := `SELECT name, xp, sprite, position_x, position_y FROM players WHERE user_id=$1`
+	rows, err := p.db.Query(ctx, sql, ID)
+	if err != nil {
+		return []*models.Player{}, err
+	}
+
+	players := make([]*models.Player, 0)
+	for rows.Next() {
+		var player models.Player
+		err = rows.Scan(
+			&player.Name,
+			&player.XP,
+			&player.Sprite,
+			&player.PositionX,
+			&player.PositionY,
+		)
+		if err != nil {
+			return []*models.Player{}, err
+		}
+		players = append(players, &player)
+	}
+
+	return players, nil
+}
