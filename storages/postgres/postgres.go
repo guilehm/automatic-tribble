@@ -172,3 +172,28 @@ func (p Postgres) GetPlayerList(ctx context.Context, ID int) ([]*models.Player, 
 
 	return players, nil
 }
+
+func (p Postgres) CreatePlayer(ctx context.Context, player models.Player) (*models.Player, error) {
+	sql := `INSERT INTO players (user_id, name, xp, sprite, position_x, position_y)
+			VALUES ($1, $2, $3, $4, $5, $6)
+			RETURNING id`
+
+	var playerID int
+	err := p.db.QueryRow(
+		ctx,
+		sql,
+		player.UserID,
+		player.Name,
+		player.XP,
+		player.Sprite,
+		player.PositionX,
+		player.PositionY,
+	).Scan(&playerID)
+	player.ID = playerID
+
+	if err != nil {
+		return &player, err
+	}
+
+	return &player, nil
+}
