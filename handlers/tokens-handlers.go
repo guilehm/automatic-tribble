@@ -8,9 +8,9 @@ import (
 	"net/http"
 	"strconv"
 	"time"
-	"tribble/db"
 	"tribble/models"
 	"tribble/settings"
+	"tribble/storages"
 
 	"github.com/dgrijalva/jwt-go"
 )
@@ -88,14 +88,12 @@ func ValidateToken(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	sql := `SELECT id FROM users WHERE refresh_token=$1`
-
-	var user models.User
-	if err := db.DB.QueryRow(ctx, sql, tokens.RefreshToken).Scan(&user.ID); err != nil {
-		log.Println(err.Error())
+	ok, err := storages.DB.ValidateToken(ctx, tokens.RefreshToken)
+	if err != nil || !ok {
 		HandleApiErrors(w, http.StatusNotFound, "")
 		return
 	}
+
 	response, _ := json.Marshal(struct {
 		Ok bool `json:"ok"`
 	}{Ok: true})
@@ -114,10 +112,8 @@ func RefreshToken(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	sql := `SELECT id, email FROM users WHERE refresh_token=$1`
-
-	var user models.User
-	if err := db.DB.QueryRow(ctx, sql, tokens.RefreshToken).Scan(&user.ID, &user.Email); err != nil {
+	user, err := storages.DB.GetUserByRefresh(ctx, tokens.RefreshToken)
+	if err != nil {
 		log.Println(err.Error())
 		HandleApiErrors(w, http.StatusNotFound, "")
 		return
@@ -129,9 +125,7 @@ func RefreshToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sql = `UPDATE users SET token=$1, refresh_token=$2 WHERE id=$3`
-	_, err = db.DB.Query(context.Background(), sql, token, refresh, user.ID)
-
+	err = storages.DB.UpdateUserTokens(ctx, user.ID, token, refresh)
 	if err != nil {
 		HandleApiErrors(w, http.StatusInternalServerError, "could not update tokens")
 		return
