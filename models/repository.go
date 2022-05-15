@@ -13,3 +13,12 @@ type UserRepository interface {
 	GetUserByRefresh(ctx context.Context, refresh string) (*User, error)
 	UpdateUserTokens(ctx context.Context, ID int, token, refresh string) error
 }
+
+type PlayerRepository interface {
+	GetPlayerList(ctx context.Context, ID int) ([]*Player, error)
+	CreatePlayer(ctx context.Context, player Player) (*Player, error)
+}
+
+type TokenRepository interface {
+	ValidateToken(ctx context.Context, refresh string) (bool, error)
+}
