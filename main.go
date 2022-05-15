@@ -17,19 +17,14 @@ import (
 func main() {
 	fmt.Println("hello world")
 
-	// ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	// defer cancel()
-
 	var err error
 	storages.DB = postgres.GetPostgres()
 	defer storages.DB.Close()
-	// storages.DB, err = pgxpool.Connect(ctx, os.Getenv("DATABASE_URL"))
 	if err != nil {
 		log.Fatalf("Unable to connect to database: %v.", err)
 	}
 	defer storages.DB.Close()
 
-	// err = storages.DB.Ping(ctx)
 	if err != nil {
 		log.Fatal(err)
 	}
