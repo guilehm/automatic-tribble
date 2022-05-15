@@ -133,9 +133,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response, _ := json.Marshal(struct {
-		ID int `json:"id"`
-	}{ID: user.ID})
+	response, _ := json.Marshal(user)
 	_, _ = w.Write(response)
 }
 
