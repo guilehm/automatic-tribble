@@ -4,12 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"log"
 	"strconv"
 	"time"
-	"tribble/db"
 	"tribble/settings"
+	"tribble/storages"
 
 	"golang.org/x/crypto/bcrypt"
 
@@ -40,17 +39,19 @@ func verifyPassword(userPassword string, providedPassword string) bool {
 
 func GetUserDetail(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	id := vars["id"]
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		HandleApiErrors(w, http.StatusInternalServerError, "")
+		return
+	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	sql := `SELECT id, name, date_joined FROM users WHERE id=$1`
-
-	var user models.User
-	if err := db.DB.QueryRow(ctx, sql, id).Scan(&user.ID, &user.Name, &user.DateJoined); err != nil {
+	user, err := storages.DB.GetUser(ctx, id)
+	if err != nil {
 		log.Println(err.Error())
-		HandleApiErrors(w, http.StatusNotFound, "")
+		HandleApiErrors(w, http.StatusInternalServerError, "")
 		return
 	}
 
@@ -68,27 +69,14 @@ func GetUserList(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	sql := `SELECT id, name, date_joined FROM users`
-	rows, err := db.DB.Query(ctx, sql)
+	users, err := storages.DB.GetUserList(ctx)
 
 	if err != nil {
 		log.Println(err.Error())
 		HandleApiErrors(w, http.StatusInternalServerError, "")
 		return
 	}
-
-	userList := make([]models.User, 0)
-	for rows.Next() {
-		var user models.User
-		err = rows.Scan(&user.ID, &user.Name, &user.DateJoined)
-		if err != nil {
-			HandleApiErrors(w, http.StatusInternalServerError, "")
-			return
-		}
-		userList = append(userList, user)
-	}
-
-	response, err := json.Marshal(userList)
+	response, err := json.Marshal(users)
 	if err != nil {
 		log.Println(err.Error())
 		HandleApiErrors(w, http.StatusInternalServerError, "")
@@ -99,7 +87,7 @@ func GetUserList(w http.ResponseWriter, r *http.Request) {
 
 func CreateUser(w http.ResponseWriter, r *http.Request) {
 
-	var user models.User
+	var user *models.User
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 		log.Println(err.Error())
 		HandleApiErrors(w, http.StatusInternalServerError, "unable to decode request body")
@@ -131,21 +119,8 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
-	var id int
 
-	sql := `INSERT INTO users (name, email, date_joined, password, token, refresh_token) 
-			VALUES ($1, $2, $3, $4, $5, $6) 
-			RETURNING id`
-	err = db.DB.QueryRow(
-		ctx,
-		sql,
-		user.Name,
-		user.Email,
-		user.DateJoined,
-		user.Password,
-		user.Token,
-		user.RefreshToken,
-	).Scan(&id)
+	user, err = storages.DB.CreateUser(ctx, *user)
 
 	if err != nil {
 		log.Println(err.Error())
@@ -158,9 +133,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response, _ := json.Marshal(struct {
-		ID string `json:"id"`
-	}{ID: fmt.Sprintf("%d", id)})
+	response, _ := json.Marshal(user)
 	_, _ = w.Write(response)
 }
 
@@ -174,6 +147,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var user models.User
+	user.ID = userId
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 		log.Println(err.Error())
 		HandleApiErrors(w, http.StatusBadRequest, "")
@@ -189,8 +163,8 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	sql := `UPDATE users SET name=$2 WHERE id=$1`
-	res, err := db.DB.Exec(ctx, sql, userId, user.Name)
+	_, err = storages.DB.UpdateUser(ctx, user)
+
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
@@ -198,11 +172,6 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		HandleApiErrors(w, http.StatusInternalServerError, "")
-		return
-	}
-
-	if rowsAffected := res.RowsAffected(); rowsAffected == 0 {
-		HandleApiErrors(w, http.StatusNotFound, "")
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)
@@ -220,14 +189,9 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	sql := `DELETE FROM users WHERE id=$1`
-	res, err := db.DB.Exec(ctx, sql, userId)
+	err = storages.DB.DeleteUser(ctx, userId)
 	if err != nil {
 		log.Println(err.Error())
-		HandleApiErrors(w, http.StatusInternalServerError, "")
-		return
-	}
-	if rowsAffected := res.RowsAffected(); rowsAffected == 0 {
 		HandleApiErrors(w, http.StatusNotFound, "")
 		return
 	}
@@ -250,30 +214,29 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	var id int
-	var password string
-	sql := `SELECT id, password FROM users WHERE email=$1`
-
-	if err := db.DB.QueryRow(ctx, sql, userLogin.Email).Scan(&id, &password); err != nil {
+	user, err := storages.DB.GetUserByEmail(ctx, userLogin.Email)
+	if err != nil {
 		log.Println(err.Error())
 		HandleApiErrors(w, http.StatusNotFound, "")
 		return
 	}
 
-	ok := verifyPassword(password, userLogin.Password)
+	ok := verifyPassword(user.Password, userLogin.Password)
 	if !ok {
 		HandleApiErrors(w, http.StatusBadRequest, "invalid password")
 		return
 	}
 
-	token, refresh, err := generateTokens(userLogin.Email, id)
+	token, refresh, err := generateTokens(userLogin.Email, user.ID)
 	if err != nil {
 		HandleApiErrors(w, http.StatusInternalServerError, "could not update tokens")
 		return
 	}
 
-	sql = `UPDATE users SET token=$1, refresh_token=$2 WHERE id=$3`
-	_, err = db.DB.Exec(ctx, sql, token, refresh, id)
+	if err = storages.DB.UpdateUserTokens(ctx, user.ID, token, refresh); err != nil {
+		HandleApiErrors(w, http.StatusInternalServerError, "could not update tokens")
+		return
+	}
 
 	if err != nil {
 		HandleApiErrors(w, http.StatusInternalServerError, "could not update tokens")
@@ -284,6 +247,6 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		Id      int    `json:"id"`
 		Token   string `json:"token"`
 		Refresh string `json:"refresh_token"`
-	}{id, token, refresh})
+	}{user.ID, token, refresh})
 	_, _ = w.Write(response)
 }

@@ -1,35 +1,30 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
-	"time"
-	"tribble/db"
 	"tribble/handlers"
 	"tribble/middlewares"
+	"tribble/storages"
+	"tribble/storages/postgres"
 
 	"github.com/gorilla/mux"
-	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/rs/cors"
 )
 
 func main() {
 	fmt.Println("hello world")
 
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
-
 	var err error
-	db.DB, err = pgxpool.Connect(ctx, os.Getenv("DATABASE_URL"))
+	storages.DB = postgres.GetPostgres()
+	defer storages.DB.Close()
 	if err != nil {
-		log.Fatal(fmt.Sprintf("Unable to connect to database: %v.", err))
+		log.Fatalf("Unable to connect to database: %v.", err)
 	}
-	defer db.DB.Close()
+	defer storages.DB.Close()
 
-	err = db.DB.Ping(ctx)
 	if err != nil {
 		log.Fatal(err)
 	}

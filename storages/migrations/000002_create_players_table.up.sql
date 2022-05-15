@@ -11,7 +11,7 @@ CREATE TABLE players
 
 ALTER TABLE players
     ADD CONSTRAINT players_user_id_fk_user_id
-        FOREIGN KEY (user_id) REFERENCES users (id);
+        FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE;
 
 CREATE INDEX players_user_id ON players (user_id);
 CREATE UNIQUE INDEX name_unique_players_idx on players (LOWER(name));
