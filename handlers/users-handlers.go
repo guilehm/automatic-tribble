@@ -194,7 +194,7 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	err = storages.DB.DeleteUser(ctx, userId)
 	if err != nil {
 		log.Println(err.Error())
-		HandleApiErrors(w, http.StatusInternalServerError, "")
+		HandleApiErrors(w, http.StatusNotFound, "")
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)
