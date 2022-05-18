@@ -42,12 +42,12 @@ func TestGetUserListHandler(t *testing.T) {
 	handler.ServeHTTP(rr, req)
 
 	if status := rr.Code; status != http.StatusOK {
-		t.Errorf("TestGetUserListHandler FAILED: want %v got %v", http.StatusOK, status)
+		t.Errorf("%s FAILED: want %v got %v", t.Name(), http.StatusOK, status)
 	}
 
 	expected, _ := json.Marshal(users)
 	if rr.Body.String() != string(expected) {
-		t.Errorf("TestGetUserListHandler FAILED: want %v got %v", expected, rr.Body.String())
+		t.Errorf("%s FAILED: want %v got %v", t.Name(), expected, rr.Body.String())
 	}
 }
 
@@ -69,11 +69,11 @@ func TestGetUserDetailHandler(t *testing.T) {
 	handler.ServeHTTP(rr, req)
 
 	if status := rr.Code; status != http.StatusOK {
-		t.Errorf("TestGetUserDetailHandler FAILED: want %v got %v", http.StatusOK, status)
+		t.Errorf("%s FAILED: want %v got %v", t.Name(), http.StatusOK, status)
 	}
 
 	expected, _ := json.Marshal(frodo)
 	if rr.Body.String() != string(expected) {
-		t.Errorf("TestGetUserDetailHandler FAILED: want %v got %v", expected, rr.Body.String())
+		t.Errorf("%s FAILED: want %v got %v", t.Name(), expected, rr.Body.String())
 	}
 }
