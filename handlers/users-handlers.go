@@ -10,6 +10,8 @@ import (
 	"tribble/settings"
 	"tribble/storages"
 
+	"github.com/jackc/pgx/v4"
+
 	"golang.org/x/crypto/bcrypt"
 
 	"net/http"
@@ -50,7 +52,15 @@ func GetUserDetail(w http.ResponseWriter, r *http.Request) {
 
 	user, err := storages.DB.GetUser(ctx, id)
 	if err != nil {
-		log.Println(err.Error())
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			HandleDatabaseErrors(w, pgErr)
+			return
+		}
+		if err == pgx.ErrNoRows {
+			HandleApiErrors(w, http.StatusNotFound, "")
+			return
+		}
 		HandleApiErrors(w, http.StatusInternalServerError, "")
 		return
 	}
