@@ -13,6 +13,11 @@ func (p PGMock) Close() {
 }
 
 func (p PGMock) GetUser(ctx context.Context, ID int) (*models.User, error) {
+	for _, user := range p.Users {
+		if user.ID == ID {
+			return user, nil
+		}
+	}
 	return nil, nil
 }
 
