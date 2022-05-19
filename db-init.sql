@@ -1,0 +1,3 @@
+DROP DATABASE IF EXISTS tests;
+CREATE DATABASE tests;
+GRANT ALL ON DATABASE tests TO current_user;
