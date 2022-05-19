@@ -8,8 +8,6 @@ import (
 	"testing"
 	"time"
 	"tribble/models"
-	"tribble/storages"
-	"tribble/storages/postgres"
 
 	"github.com/gorilla/mux"
 )
@@ -48,9 +46,6 @@ func TestGetUserListHandler(t *testing.T) {
 }
 
 func TestGetUserDetailHandler(t *testing.T) {
-	storages.DB = postgres.PGMock{
-		Users: []*models.User{frodo},
-	}
 
 	url := fmt.Sprintf("/users/%v/", frodo.ID)
 
