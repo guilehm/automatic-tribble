@@ -28,10 +28,6 @@ func TestGetUserListHandler(t *testing.T) {
 
 	users := []*models.User{frodo}
 
-	storages.DB = postgres.PGMock{
-		Users: users,
-	}
-
 	req, err := http.NewRequest("GET", "/users/", nil)
 	if err != nil {
 		t.Fatal(err)
