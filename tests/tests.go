@@ -33,7 +33,6 @@ func ensureVersionTable(conn *sql.DB) error {
 	return nil
 }
 
-// TODO: temporary solution, should not be a main function
 func main() {
 	db, err := sql.Open("postgres", os.Getenv("DATABASE_URL"))
 
