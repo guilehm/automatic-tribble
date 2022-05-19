@@ -27,8 +27,22 @@ services:
       - POSTGRES_DB=tribble
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./db-init.sql:/docker-entrypoint-initdb.d/db-init.sql
     ports:
       - "5432:5432"
+
+  tests:
+    image: tribble
+    command: sh -c "go run tests/tests.go && go test -v ./..."
+    volumes:
+      - .:/go/src/
+    depends_on:
+      - tribble
+      - postgres
+    links:
+      - postgres
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@db:5432/tests?sslmode=disable
 
 volumes:
   postgres_data:
