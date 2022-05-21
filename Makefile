@@ -1,5 +1,6 @@
 DOCKER_COMPOSE=docker-compose
-
+APP_NAME?=tribble
+DATABASE_TESTS_URL=postgres://postgres:postgres@db:5432/tests?sslmode=disable
 
 build:
 	@echo "Building the app"
