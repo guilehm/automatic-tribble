@@ -36,6 +36,7 @@ func (p Postgres) Close() {
 }
 
 func (p Postgres) GetUser(ctx context.Context, ID int) (*models.User, error) {
+
 	sql := `SELECT id, name, email, date_joined FROM users WHERE id=$1`
 
 	var user models.User
