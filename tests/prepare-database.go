@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/golang-migrate/migrate/v4/database"
 
@@ -34,7 +35,12 @@ func ensureVersionTable(conn *sql.DB) error {
 }
 
 func main() {
-	db, err := sql.Open("postgres", os.Getenv("DATABASE_URL"))
+	dbUrl := os.Getenv("DATABASE_URL")
+	if !strings.Contains(dbUrl, "test") {
+		log.Fatalln("invalid database")
+	}
+
+	db, err := sql.Open("postgres", dbUrl)
 
 	if err != nil {
 		log.Fatalln("could not connect to database", err)
