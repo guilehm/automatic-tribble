@@ -29,3 +29,7 @@ remove:
 
 setup: build up-db
 
+test:
+	@echo "Running tests"
+	-$(DOCKER_COMPOSE) exec -e DATABASE_URL=$(DATABASE_TESTS_URL) $(APP_NAME) go run ./tests/tests.go
+	-$(DOCKER_COMPOSE) exec -e DATABASE_URL=$(DATABASE_TESTS_URL) $(APP_NAME) go test -v ./...
