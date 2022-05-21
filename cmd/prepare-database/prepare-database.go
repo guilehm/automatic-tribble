@@ -37,7 +37,7 @@ func ensureVersionTable(conn *sql.DB) error {
 
 func main() {
 	dbUrl := os.Getenv("DATABASE_URL")
-	if !strings.Contains(dbUrl, "test") {
+	if !strings.Contains(dbUrl, "/tests") {
 		log.Fatalln("invalid database")
 	}
 
