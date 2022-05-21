@@ -70,4 +70,5 @@ func main() {
 	if err != nil {
 		log.Fatalln("could not migrate up", err)
 	}
+	log.Println("SUCCESSFULLY PREPARED THE DATABASE")
 }
