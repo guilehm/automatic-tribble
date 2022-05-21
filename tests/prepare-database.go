@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -70,5 +71,5 @@ func main() {
 	if err != nil {
 		log.Fatalln("could not migrate up", err)
 	}
-	log.Println("SUCCESSFULLY PREPARED THE DATABASE")
+	fmt.Println("SUCCESSFULLY PREPARED THE DATABASE")
 }
