@@ -75,3 +75,40 @@ func TestGetUserDetailHandler(t *testing.T) {
 		t.Errorf("%s FAILED: want %v got %v", t.Name(), expected, rr.Body.String())
 	}
 }
+
+func TestCreateUser(t *testing.T) {
+	url := "/users/"
+
+	payload, err := json.Marshal(frodo)
+	if err != nil {
+		t.Fatal(err)
+	}
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(payload))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rr := httptest.NewRecorder()
+	handler := mux.NewRouter()
+	handler.HandleFunc("/users/", CreateUser).Methods("POST")
+
+	var count int
+	sql := `SELECT COUNT(*) FROM users`
+	if err = pg.DB.QueryRow(context.Background(), sql).Scan(&count); err != nil {
+		t.Fatalf("%s FAILED: could not count users", t.Name())
+	}
+
+	assert.Equal(t, count, 0)
+	handler.ServeHTTP(rr, req)
+
+	if status := rr.Code; status != http.StatusCreated {
+		t.Errorf("%s FAILED: want %v got %v", t.Name(), http.StatusCreated, status)
+	}
+
+	if err = pg.DB.QueryRow(context.Background(), sql).Scan(&count); err != nil {
+		t.Fatalf("%s FAILED: could not count users", t.Name())
+	}
+
+	assert.Equal(t, count, 1)
+
+}
