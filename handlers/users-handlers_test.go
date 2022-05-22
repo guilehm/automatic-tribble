@@ -82,7 +82,7 @@ func TestGetUserDetailHandler(t *testing.T) {
 	}
 }
 
-func TestCreateUser(t *testing.T) {
+func TestCreateUserHandler(t *testing.T) {
 	url := "/users/"
 
 	payload, err := json.Marshal(frodo)
@@ -110,11 +110,9 @@ func TestCreateUser(t *testing.T) {
 	if status := rr.Code; status != http.StatusCreated {
 		t.Errorf("%s FAILED: want %v got %v", t.Name(), http.StatusCreated, status)
 	}
-
 	if err = pg.DB.QueryRow(context.Background(), sql).Scan(&count); err != nil {
 		t.Fatalf("%s FAILED: could not count users", t.Name())
 	}
 
 	assert.Equal(t, count, 1)
-
 }
