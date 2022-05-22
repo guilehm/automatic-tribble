@@ -18,6 +18,8 @@ import (
 	"github.com/gorilla/mux"
 )
 
+var pg = postgres.GetPostgres()
+
 var frodo = &models.User{
 	ID:           1,
 	Name:         "frodo",
@@ -28,11 +30,44 @@ var frodo = &models.User{
 	DateJoined:   time.Now(),
 }
 
-var pg = postgres.GetPostgres()
-
 func TestSetup(t *testing.T) {
 	storages.DB = pg
 	t.Log("setting postgres as default database")
+}
+
+func TestCreateUserHandler(t *testing.T) {
+	url := "/users/"
+
+	payload, err := json.Marshal(frodo)
+	if err != nil {
+		t.Fatal(err)
+	}
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(payload))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rr := httptest.NewRecorder()
+	handler := mux.NewRouter()
+	handler.HandleFunc("/users/", CreateUser).Methods("POST")
+
+	var count int
+	sql := `SELECT COUNT(*) FROM users`
+	if err = pg.DB.QueryRow(context.Background(), sql).Scan(&count); err != nil {
+		t.Fatalf("%s FAILED: could not count users", t.Name())
+	}
+
+	assert.Equal(t, count, 0)
+	handler.ServeHTTP(rr, req)
+
+	if status := rr.Code; status != http.StatusCreated {
+		t.Errorf("%s FAILED: want %d got %d", t.Name(), http.StatusCreated, status)
+	}
+	if err = pg.DB.QueryRow(context.Background(), sql).Scan(&count); err != nil {
+		t.Fatalf("%s FAILED: could not count users", t.Name())
+	}
+
+	assert.Equal(t, count, 1)
 }
 
 func TestGetUserListHandler(t *testing.T) {
@@ -80,39 +115,4 @@ func TestGetUserDetailHandler(t *testing.T) {
 	if rr.Body.String() != string(expected) {
 		t.Errorf("%s FAILED: want %s got %s", t.Name(), expected, rr.Body.String())
 	}
-}
-
-func TestCreateUserHandler(t *testing.T) {
-	url := "/users/"
-
-	payload, err := json.Marshal(frodo)
-	if err != nil {
-		t.Fatal(err)
-	}
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(payload))
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	rr := httptest.NewRecorder()
-	handler := mux.NewRouter()
-	handler.HandleFunc("/users/", CreateUser).Methods("POST")
-
-	var count int
-	sql := `SELECT COUNT(*) FROM users`
-	if err = pg.DB.QueryRow(context.Background(), sql).Scan(&count); err != nil {
-		t.Fatalf("%s FAILED: could not count users", t.Name())
-	}
-
-	assert.Equal(t, count, 0)
-	handler.ServeHTTP(rr, req)
-
-	if status := rr.Code; status != http.StatusCreated {
-		t.Errorf("%s FAILED: want %v got %v", t.Name(), http.StatusCreated, status)
-	}
-	if err = pg.DB.QueryRow(context.Background(), sql).Scan(&count); err != nil {
-		t.Fatalf("%s FAILED: could not count users", t.Name())
-	}
-
-	assert.Equal(t, count, 1)
 }
