@@ -16,7 +16,7 @@ var frodo = &models.User{
 	ID:           1,
 	Name:         "frodo",
 	Email:        "frodo@gmail.com",
-	Password:     "pass",
+	Password:     "password",
 	Token:        "token",
 	RefreshToken: "pass",
 	DateJoined:   time.Now(),
