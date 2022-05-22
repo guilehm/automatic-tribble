@@ -22,6 +22,13 @@ var frodo = &models.User{
 	DateJoined:   time.Now(),
 }
 
+var pg = postgres.GetPostgres()
+
+func TestSetup(t *testing.T) {
+	storages.DB = pg
+	t.Log("setting postgres as default database")
+}
+
 func TestGetUserListHandler(t *testing.T) {
 
 	users := []*models.User{frodo}
