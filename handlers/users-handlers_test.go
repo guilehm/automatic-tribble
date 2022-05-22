@@ -26,7 +26,17 @@ var frodo = &models.User{
 	Email:        "frodo@gmail.com",
 	Password:     "password",
 	Token:        "token",
-	RefreshToken: "pass",
+	RefreshToken: "refresh",
+	DateJoined:   time.Now(),
+}
+
+var gandalf = &models.User{
+	ID:           2,
+	Name:         "gandalf",
+	Email:        "gandalf@gmail.com",
+	Password:     "mysecret",
+	Token:        "token",
+	RefreshToken: "refresh",
 	DateJoined:   time.Now(),
 }
 
