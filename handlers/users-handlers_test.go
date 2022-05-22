@@ -87,6 +87,13 @@ func TestGetUserListHandler(t *testing.T) {
 		t.Errorf("%s FAILED: want %d got %d", t.Name(), http.StatusOK, status)
 	}
 
+	for _, user := range users {
+		// omit fields
+		user.Token = ""
+		user.RefreshToken = ""
+		user.Password = ""
+	}
+
 	expected, _ := json.Marshal(users)
 	if rr.Body.String() != string(expected) {
 		t.Errorf("%s FAILED: want %s got %s", t.Name(), expected, rr.Body.String())
