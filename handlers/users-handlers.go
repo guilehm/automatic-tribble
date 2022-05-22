@@ -144,6 +144,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response, _ := json.Marshal(user)
+	w.WriteHeader(http.StatusCreated)
 	_, _ = w.Write(response)
 }
 
