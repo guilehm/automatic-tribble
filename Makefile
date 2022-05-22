@@ -26,7 +26,7 @@ remove:
 
 test:
 	@echo "PREPARING DATABASE FOR TESTS\n"
-	-$(DOCKER_COMPOSE) exec -e DATABASE_URL=$(DATABASE_TESTS_URL) $(APP_NAME) go run ./tests/prepare-database.go
+	-$(DOCKER_COMPOSE) exec -e DATABASE_URL=$(DATABASE_TESTS_URL) $(APP_NAME) go run ./cmd/prepare-database/prepare-database.go
 	@echo "RUNNING TESTS\n"
 	-$(DOCKER_COMPOSE) exec -e DATABASE_URL=$(DATABASE_TESTS_URL) $(APP_NAME) go test -v ./...
 
