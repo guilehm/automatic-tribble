@@ -32,16 +32,6 @@ var frodo = &models.User{
 	DateJoined:   time.Now(),
 }
 
-var gandalf = &models.User{
-	ID:           2,
-	Name:         "gandalf",
-	Email:        "gandalf@gmail.com",
-	Password:     "mysecret",
-	Token:        "token",
-	RefreshToken: "refresh",
-	DateJoined:   time.Now(),
-}
-
 func TestSetup(t *testing.T) {
 	storages.DB = pg
 	t.Log("setting postgres as default database")
