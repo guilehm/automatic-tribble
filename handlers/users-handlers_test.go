@@ -7,9 +7,11 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"testing"
 	"time"
 	"tribble/models"
+	"tribble/settings"
 	"tribble/storages"
 	"tribble/storages/postgres"
 
@@ -78,6 +80,47 @@ func TestCreateUserHandler(t *testing.T) {
 	}
 
 	assert.Equal(t, count, 1)
+}
+
+func TestUpdateUserHandler(t *testing.T) {
+	url := "/users/"
+	newName := "FRODO"
+
+	assert.Equal(t, frodo.Name, "frodo")
+	frodo.Name = newName
+	payload, err := json.Marshal(frodo)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	req, err := http.NewRequest("PUT", url, bytes.NewBuffer(payload))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// frodo authentication
+	ctx := req.Context()
+	ctx = context.WithValue(ctx, settings.E, frodo.Email)
+	ctx = context.WithValue(ctx, settings.I, strconv.Itoa(frodo.ID))
+	req = req.WithContext(ctx)
+
+	rr := httptest.NewRecorder()
+	handler := mux.NewRouter()
+	handler.HandleFunc("/users/", UpdateUser).Methods("PUT")
+
+	handler.ServeHTTP(rr, req)
+
+	if status := rr.Code; status != http.StatusNoContent {
+		t.Errorf("%s FAILED: want %d got %d", t.Name(), http.StatusNoContent, status)
+	}
+
+	var name string
+	sql := `SELECT name FROM users WHERE name=$1`
+	if err = pg.DB.QueryRow(context.Background(), sql, frodo.Name).Scan(&name); err != nil {
+		t.Fatalf("%s FAILED: could retrieve user", t.Name())
+	}
+
+	assert.Equal(t, name, newName)
 }
 
 func TestGetUserListHandler(t *testing.T) {
