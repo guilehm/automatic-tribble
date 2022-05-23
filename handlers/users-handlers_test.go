@@ -83,6 +83,8 @@ func TestCreateUserHandler(t *testing.T) {
 }
 
 func TestUpdateUserHandler(t *testing.T) {
+	// TODO: test fields that cannot be updated
+
 	url := "/users/"
 	newName := "FRODO"
 
