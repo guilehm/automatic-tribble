@@ -24,7 +24,7 @@ func Authentication(handler http.HandlerFunc) http.HandlerFunc {
 		}
 
 		ctx := r.Context()
-		ctx = context.WithValue(ctx, settings.E, claims.Email)
+		ctx = context.WithValue(ctx, settings.U, claims.Username)
 		ctx = context.WithValue(ctx, settings.I, claims.ID)
 		req := r.WithContext(ctx)
 		handler.ServeHTTP(w, req)

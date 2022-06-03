@@ -2,12 +2,12 @@ package settings
 
 import "os"
 
-type Email string
+type Username string
 type ID string
 
 const (
-	E Email = "email"
-	I ID    = "id"
+	U Username = "username"
+	I ID       = "id"
 )
 
 var JWTSecretKey = os.Getenv("JWT_SECRET_KEY")

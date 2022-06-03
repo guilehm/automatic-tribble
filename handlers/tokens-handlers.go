@@ -16,8 +16,8 @@ import (
 )
 
 type SignedDetails struct {
-	Email string
-	ID    string
+	Username string
+	ID       string
 	jwt.StandardClaims
 }
 
@@ -49,8 +49,8 @@ func CheckToken(signedToken string) (claims *SignedDetails, err error) {
 
 func generateTokens(username string, userId int) (signedToken string, signedRefreshToken string, err error) {
 	claims := &SignedDetails{
-		Email: username,
-		ID:    strconv.Itoa(userId),
+		Username: username,
+		ID:       strconv.Itoa(userId),
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Local().Add(accessTokenLifetime).Unix(),
 		},
