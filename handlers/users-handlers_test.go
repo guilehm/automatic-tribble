@@ -22,10 +22,11 @@ import (
 
 var pg = postgres.GetPostgres()
 
+var frodoEmail = "frodo@gmail.com"
 var frodo = &models.User{
 	ID:           1,
-	Name:         "frodo",
-	Email:        "frodo@gmail.com",
+	Username:     "frodo",
+	Email:        &frodoEmail,
 	Password:     "password",
 	Token:        "token",
 	RefreshToken: "refresh",
@@ -76,10 +77,10 @@ func TestUpdateUserHandler(t *testing.T) {
 	// TODO: test fields that cannot be updated
 
 	url := "/users/"
-	newName := "FRODO"
+	newUsername := "FRODO"
 
-	assert.Equal(t, frodo.Name, "frodo")
-	frodo.Name = newName
+	assert.Equal(t, frodo.Username, "frodo")
+	frodo.Username = newUsername
 	payload, err := json.Marshal(frodo)
 	if err != nil {
 		t.Fatal(err)
@@ -106,13 +107,13 @@ func TestUpdateUserHandler(t *testing.T) {
 		t.Errorf("%s FAILED: want %d got %d", t.Name(), http.StatusNoContent, status)
 	}
 
-	var name string
-	sql := `SELECT name FROM users WHERE name=$1`
-	if err = pg.DB.QueryRow(context.Background(), sql, frodo.Name).Scan(&name); err != nil {
+	var username string
+	sql := `SELECT username FROM users WHERE username=$1`
+	if err = pg.DB.QueryRow(context.Background(), sql, frodo.Username).Scan(&username); err != nil {
 		t.Fatalf("%s FAILED: could retrieve user", t.Name())
 	}
 
-	assert.Equal(t, name, newName)
+	assert.Equal(t, username, newUsername)
 }
 
 func TestGetUserListHandler(t *testing.T) {
@@ -168,3 +169,5 @@ func TestGetUserDetailHandler(t *testing.T) {
 		t.Errorf("%s FAILED: want %s got %s", t.Name(), expected, rr.Body.String())
 	}
 }
+
+// TODO: create tests to validate unique email
