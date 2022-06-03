@@ -110,15 +110,13 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO: validate unique email
-
 	password, err := hashPassword(user.Password)
 	if err != nil {
 		HandleApiErrors(w, http.StatusInternalServerError, "could not hash password")
 		return
 	}
 
-	token, refresh, err := generateTokens(user.Email, user.ID)
+	token, refresh, err := generateTokens(user.Username, user.ID)
 	if err != nil {
 		HandleApiErrors(w, http.StatusInternalServerError, "could not generate tokens")
 		return
@@ -175,8 +173,6 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
-
-	// TODO: validate unique email
 
 	_, err = storages.DB.UpdateUser(ctx, user)
 
