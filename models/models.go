@@ -5,7 +5,7 @@ import "time"
 type User struct {
 	ID           int       `json:"id"`
 	Username     string    `json:"username" validate:"required,gte=3"`
-	Email        string    `json:"email" validate:"omitempty,email"`
+	Email        *string   `json:"email" validate:"omitempty,email"`
 	Password     string    `json:"password,omitempty" validate:"required,gte=5"`
 	Token        string    `json:"token,omitempty"`
 	RefreshToken string    `json:"refresh_token,omitempty"`
