@@ -47,9 +47,9 @@ func CheckToken(signedToken string) (claims *SignedDetails, err error) {
 	return claims, nil
 }
 
-func generateTokens(email string, userId int) (signedToken string, signedRefreshToken string, err error) {
+func generateTokens(username string, userId int) (signedToken string, signedRefreshToken string, err error) {
 	claims := &SignedDetails{
-		Email: email,
+		Email: username,
 		ID:    strconv.Itoa(userId),
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Local().Add(accessTokenLifetime).Unix(),
@@ -119,7 +119,7 @@ func RefreshToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, refresh, err := generateTokens(user.Email, user.ID)
+	token, refresh, err := generateTokens(user.Username, user.ID)
 	if err != nil {
 		HandleApiErrors(w, http.StatusInternalServerError, err.Error())
 		return
