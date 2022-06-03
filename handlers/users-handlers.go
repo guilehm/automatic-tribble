@@ -110,6 +110,8 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// TODO: validate unique email
+
 	password, err := hashPassword(user.Password)
 	if err != nil {
 		HandleApiErrors(w, http.StatusInternalServerError, "could not hash password")
@@ -165,7 +167,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if validationErr := validate.StructPartial(user, user.Name); validationErr != nil {
+	if validationErr := validate.StructPartial(user, user.Username); validationErr != nil {
 		log.Println(validationErr.Error())
 		HandleApiErrors(w, http.StatusBadRequest, validationErr.Error())
 		return
@@ -173,6 +175,8 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
+
+	// TODO: validate unique email
 
 	_, err = storages.DB.UpdateUser(ctx, user)
 

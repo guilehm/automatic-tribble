@@ -37,11 +37,11 @@ func (p Postgres) Close() {
 
 func (p Postgres) GetUser(ctx context.Context, ID int) (*models.User, error) {
 
-	sql := `SELECT id, name, email, date_joined FROM users WHERE id=$1`
+	sql := `SELECT id, username, email, date_joined FROM users WHERE id=$1`
 
 	var user models.User
 	if err := p.DB.QueryRow(ctx, sql, ID).Scan(
-		&user.ID, &user.Name, &user.Email, &user.DateJoined,
+		&user.ID, &user.Username, &user.Email, &user.DateJoined,
 	); err != nil {
 		return nil, err
 	}
@@ -49,11 +49,11 @@ func (p Postgres) GetUser(ctx context.Context, ID int) (*models.User, error) {
 }
 
 func (p Postgres) GetUserByEmail(ctx context.Context, email string) (*models.User, error) {
-	sql := `SELECT id, name, email, password, date_joined FROM users WHERE email=$1`
+	sql := `SELECT id, username, email, password, date_joined FROM users WHERE email=$1`
 
 	var user models.User
 	if err := p.DB.QueryRow(ctx, sql, email).Scan(
-		&user.ID, &user.Name, &user.Email, &user.Password, &user.DateJoined,
+		&user.ID, &user.Username, &user.Email, &user.Password, &user.DateJoined,
 	); err != nil {
 		return nil, err
 	}
@@ -61,11 +61,11 @@ func (p Postgres) GetUserByEmail(ctx context.Context, email string) (*models.Use
 }
 
 func (p Postgres) GetUserByRefresh(ctx context.Context, refresh string) (*models.User, error) {
-	sql := `SELECT id, name, email, password, date_joined FROM users WHERE refresh_token=$1`
+	sql := `SELECT id, username, email, password, date_joined FROM users WHERE refresh_token=$1`
 
 	var user models.User
 	if err := p.DB.QueryRow(ctx, sql, refresh).Scan(
-		&user.ID, &user.Name, &user.Email, &user.Password, &user.DateJoined,
+		&user.ID, &user.Username, &user.Email, &user.Password, &user.DateJoined,
 	); err != nil {
 		return nil, err
 	}
@@ -75,7 +75,7 @@ func (p Postgres) GetUserByRefresh(ctx context.Context, refresh string) (*models
 func (p Postgres) GetUserList(ctx context.Context) ([]*models.User, error) {
 	users := make([]*models.User, 0)
 
-	sql := `SELECT id, name, email, date_joined FROM users`
+	sql := `SELECT id, username, email, date_joined FROM users`
 	rows, err := p.DB.Query(ctx, sql)
 	if err != nil {
 		return users, err
@@ -83,7 +83,7 @@ func (p Postgres) GetUserList(ctx context.Context) ([]*models.User, error) {
 
 	for rows.Next() {
 		var user models.User
-		err = rows.Scan(&user.ID, &user.Name, &user.Email, &user.DateJoined)
+		err = rows.Scan(&user.ID, &user.Username, &user.Email, &user.DateJoined)
 		if err != nil {
 			return users, err
 		}
@@ -94,7 +94,7 @@ func (p Postgres) GetUserList(ctx context.Context) ([]*models.User, error) {
 
 func (p Postgres) CreateUser(ctx context.Context, user models.User) (*models.User, error) {
 
-	sql := `INSERT INTO users (name, email, date_joined, password, token, refresh_token) 
+	sql := `INSERT INTO users (username, email, date_joined, password, token, refresh_token) 
 			VALUES ($1, $2, $3, $4, $5, $6) 
 			RETURNING id`
 
@@ -102,7 +102,7 @@ func (p Postgres) CreateUser(ctx context.Context, user models.User) (*models.Use
 	if err := p.DB.QueryRow(
 		ctx,
 		sql,
-		user.Name,
+		user.Username,
 		user.Email,
 		user.DateJoined,
 		user.Password,
@@ -116,9 +116,9 @@ func (p Postgres) CreateUser(ctx context.Context, user models.User) (*models.Use
 }
 
 func (p Postgres) UpdateUser(ctx context.Context, user models.User) (*models.User, error) {
-	// TODO: updating only name for now
-	sql := `UPDATE users SET name=$2 WHERE id=$1`
-	res, err := p.DB.Exec(ctx, sql, user.ID, user.Name)
+	// TODO: updating only username for now
+	sql := `UPDATE users SET username=$2 WHERE id=$1`
+	res, err := p.DB.Exec(ctx, sql, user.ID, user.Username)
 	if err != nil {
 		return nil, err
 	}
