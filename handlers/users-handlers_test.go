@@ -171,3 +171,4 @@ func TestGetUserDetailHandler(t *testing.T) {
 }
 
 // TODO: create tests to validate unique email
+// TODO: create tests to lowercase emails

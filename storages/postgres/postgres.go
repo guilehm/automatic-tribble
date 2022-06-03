@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log"
 	"os"
+	"strings"
 	"time"
 	"tribble/models"
 
@@ -51,8 +52,9 @@ func (p Postgres) GetUserByEmail(ctx context.Context, email string) (*models.Use
 	sql := `SELECT id, username, email, password, date_joined FROM users WHERE email=$1`
 
 	var user models.User
-	if err := p.DB.QueryRow(ctx, sql, email).Scan(
-		&user.ID, &user.Username, &user.Email, &user.Password, &user.DateJoined,
+	lowerEmail := strings.ToLower(*user.Email)
+	if err := p.DB.QueryRow(ctx, sql, strings.ToLower(email)).Scan(
+		&user.ID, &user.Username, &lowerEmail, &user.Password, &user.DateJoined,
 	); err != nil {
 		return nil, err
 	}
@@ -102,7 +104,7 @@ func (p Postgres) CreateUser(ctx context.Context, user models.User) (*models.Use
 		ctx,
 		sql,
 		user.Username,
-		user.Email,
+		strings.ToLower(*user.Email),
 		user.DateJoined,
 		user.Password,
 		user.Token,
@@ -111,6 +113,10 @@ func (p Postgres) CreateUser(ctx context.Context, user models.User) (*models.Use
 		return nil, err
 	}
 	user.ID = id
+	if user.Email != nil {
+		loweredEmail := strings.ToLower(*user.Email)
+		user.Email = &loweredEmail
+	}
 	return &user, nil
 }
 
