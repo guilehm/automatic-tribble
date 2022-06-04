@@ -93,7 +93,7 @@ func TestUpdateUserHandler(t *testing.T) {
 
 	// frodo authentication
 	ctx := req.Context()
-	ctx = context.WithValue(ctx, settings.E, frodo.Email)
+	ctx = context.WithValue(ctx, settings.U, frodo.Username)
 	ctx = context.WithValue(ctx, settings.I, strconv.Itoa(frodo.ID))
 	req = req.WithContext(ctx)
 
