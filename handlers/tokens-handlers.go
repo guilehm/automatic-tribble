@@ -21,9 +21,6 @@ type SignedDetails struct {
 	jwt.StandardClaims
 }
 
-const accessTokenLifetime = time.Minute * time.Duration(10)
-const refreshTokenLifetime = time.Hour * time.Duration(24)
-
 func CheckToken(signedToken string) (claims *SignedDetails, err error) {
 	token, err := jwt.ParseWithClaims(
 		signedToken,
@@ -52,13 +49,13 @@ func generateTokens(username string, userId int) (signedToken string, signedRefr
 		Username: username,
 		ID:       strconv.Itoa(userId),
 		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: time.Now().Local().Add(accessTokenLifetime).Unix(),
+			ExpiresAt: time.Now().Local().Add(settings.AccessTokenLifetime).Unix(),
 		},
 	}
 
 	refreshClaims := &SignedDetails{
 		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: time.Now().Local().Add(refreshTokenLifetime).Unix(),
+			ExpiresAt: time.Now().Local().Add(settings.RefreshTokenLifetime).Unix(),
 		},
 	}
 
