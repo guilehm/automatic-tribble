@@ -100,11 +100,16 @@ func (p Postgres) CreateUser(ctx context.Context, user models.User) (*models.Use
 			RETURNING id`
 
 	var id int
+	var e *string
+	if user.Email != nil {
+		le := strings.ToLower(*user.Email)
+		e = &le
+	}
 	if err := p.DB.QueryRow(
 		ctx,
 		sql,
 		user.Username,
-		strings.ToLower(*user.Email),
+		e,
 		user.DateJoined,
 		user.Password,
 		user.Token,
@@ -113,10 +118,7 @@ func (p Postgres) CreateUser(ctx context.Context, user models.User) (*models.Use
 		return nil, err
 	}
 	user.ID = id
-	if user.Email != nil {
-		loweredEmail := strings.ToLower(*user.Email)
-		user.Email = &loweredEmail
-	}
+	user.Email = e
 	return &user, nil
 }
 
