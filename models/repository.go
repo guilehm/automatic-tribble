@@ -9,6 +9,7 @@ type UserRepository interface {
 	UpdateUser(ctx context.Context, user User) (*User, error)
 	DeleteUser(ctx context.Context, ID int) error
 
+	GetUserByUsername(ctx context.Context, username string) (*User, error)
 	GetUserByEmail(ctx context.Context, email string) (*User, error)
 	GetUserByRefresh(ctx context.Context, refresh string) (*User, error)
 	UpdateUserTokens(ctx context.Context, ID int, token, refresh string) error
