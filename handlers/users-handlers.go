@@ -159,6 +159,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 
 	user, err = storages.DB.CreateUser(ctx, *user)
+	user.Password = ""
 
 	if err != nil {
 		log.Println(err.Error())
