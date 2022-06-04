@@ -10,3 +10,4 @@ CREATE TABLE users
 );
 
 CREATE UNIQUE INDEX name_unique_users_idx on users (LOWER(username));
+CREATE INDEX email_users_idx on users (email);
