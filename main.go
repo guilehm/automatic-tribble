@@ -41,12 +41,12 @@ func main() {
 	r.HandleFunc("/users/", handlers.GetUserList).Methods("GET")
 	r.HandleFunc("/users/{id}/", handlers.GetUserDetail).Methods("GET")
 	r.HandleFunc("/users/", handlers.CreateUser).Methods("POST")
-	r.HandleFunc("/users/username/validate/", handlers.ValidateUsername).Methods("POST")
 
 	r.HandleFunc("/users/", middlewares.Authentication(handlers.UpdateUser)).Methods("PUT")
 	r.HandleFunc("/users/", middlewares.Authentication(handlers.DeleteUser)).Methods("DELETE")
 
 	r.HandleFunc("/users/validate/", handlers.ValidateToken).Methods("POST")
+	r.HandleFunc("/users/validate/username/", handlers.ValidateUsername).Methods("POST")
 	r.HandleFunc("/users/refresh/", handlers.RefreshToken).Methods("POST")
 	r.HandleFunc("/users/login/", handlers.Login).Methods("POST")
 
