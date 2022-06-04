@@ -46,8 +46,7 @@ func ValidateUsername(w http.ResponseWriter, r *http.Request) {
 		HandleApiErrors(w, http.StatusBadRequest, "")
 		return
 	}
-
-	if validationErr := validate.StructPartial(user, user.Username); validationErr != nil {
+	if validationErr := validate.StructPartial(user, "Username"); validationErr != nil {
 		log.Println(validationErr.Error())
 		HandleApiErrors(w, http.StatusBadRequest, validationErr.Error())
 		return
@@ -193,7 +192,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if validationErr := validate.StructPartial(user, user.Username); validationErr != nil {
+	if validationErr := validate.StructPartial(user, "Username"); validationErr != nil {
 		log.Println(validationErr.Error())
 		HandleApiErrors(w, http.StatusBadRequest, validationErr.Error())
 		return
