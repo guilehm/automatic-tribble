@@ -54,7 +54,8 @@ func ValidateUsername(w http.ResponseWriter, r *http.Request) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
-	user, err := storages.DB.GetUserByUsername(ctx, user.Username)
+
+	_, err := storages.DB.GetUserByUsername(ctx, user.Username)
 	if err == nil {
 		HandleApiErrors(w, http.StatusBadRequest, "username not available")
 		return
