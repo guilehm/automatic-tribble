@@ -39,6 +39,34 @@ func verifyPassword(userPassword string, providedPassword string) bool {
 	return err == nil
 }
 
+func ValidateUsername(w http.ResponseWriter, r *http.Request) {
+	var user *models.User
+	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
+		log.Println(err.Error())
+		HandleApiErrors(w, http.StatusBadRequest, "")
+		return
+	}
+
+	if validationErr := validate.StructPartial(user, user.Username); validationErr != nil {
+		log.Println(validationErr.Error())
+		HandleApiErrors(w, http.StatusBadRequest, validationErr.Error())
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	user, err := storages.DB.GetUserByUsername(ctx, user.Username)
+	if err == nil {
+		HandleApiErrors(w, http.StatusBadRequest, "username not available")
+		return
+	}
+
+	response, _ := json.Marshal(struct {
+		Ok bool `json:"ok"`
+	}{Ok: true})
+	_, _ = w.Write(response)
+}
+
 func GetUserDetail(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
