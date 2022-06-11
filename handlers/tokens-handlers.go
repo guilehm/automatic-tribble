@@ -16,8 +16,8 @@ import (
 )
 
 type SignedDetails struct {
-	Username string
-	ID       string
+	Username string `json:"username"`
+	ID       string `json:"id"`
 	jwt.StandardClaims
 }
 
